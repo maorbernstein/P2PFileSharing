@@ -7,7 +7,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Map;
 
-public class FileManager {
+public class FileManager implements FileManagerGUI_IF {
 	private static final String  GOLDEN_CHEST_DIRECTORY = "./GoldenChest/";
 	private ArrayList<String>              golden_chest;
 	private Map<String, ArrayList<String> > file_ledger;
