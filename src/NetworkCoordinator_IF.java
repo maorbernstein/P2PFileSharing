@@ -1,5 +1,5 @@
 
-public interface NetworkManager_IF {
+public interface NetworkCoordinator_IF {
 	public void sendAddFile(String filename);
 	public void sendAddUser(String username, String ip);
 	public void sendModifyFile(String filename);
