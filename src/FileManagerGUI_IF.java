@@ -1,7 +1,8 @@
 
+// File Manager Interface to the GUI (handles User requests)
 public interface FileManagerGUI_IF {
-	public void addFile(String filename, String directory);
-	public void getFile(String filename);
-	public void removeFile(String filename);
-	public void updateFile(String filename, String directory);	
+	public void addUserFile(String filename, String directory);
+	public void getUserFile(String filename, String username);
+	public void removeUserFile(String filename);
+	public void updateUserFile(String filename, String directory);	
 }
