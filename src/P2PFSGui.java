@@ -1,11 +1,18 @@
-import java.awt.*;
-import java.awt.event.*;
-import javax.swing.*;
-import javax.swing.border.Border;
-import javax.swing.border.EmptyBorder;
-import javax.swing.border.MatteBorder;
-import javax.swing.table.DefaultTableModel;
+import javafx.application.Application;
+import javafx.event.ActionEvent;
+import javafx.geometry.Pos;
+import javafx.scene.Scene;
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
+import javafx.scene.control.TableView;
+import javafx.scene.control.TableColumn;
+import javafx.scene.control.TextField;
+import javafx.scene.layout.GridPane;
+import javafx.stage.FileChooser;
+import javafx.stage.Modality;
+import javafx.stage.Stage;
 
+import java.io.File;
 
 /*****************************************************************************************
  * <p>
@@ -20,108 +27,116 @@ import javax.swing.table.DefaultTableModel;
  * <p>
  ****************************************************************************************/
 
-public class P2PFSGui
+public class P2PFSGui extends Application
 {
-    private Frame guiFrame;
-    private Panel guiPanel;
+    private GridPane startUpGrid;
+    private Scene startUpScene;
+    private Stage startUpStage;
 
-    final int GUI_FRAME_HEIGHT = 400;
-    final int GUI_FRAME_WIDTH = 400;
+    private GridPane mainGrid;
+    private Scene mainScene;
+    private Stage mainStage;
+    private TableView mainTableView;
 
-    public void createGui()
+    private String username;
+
+    @Override
+    public void start(Stage mainStage)
     {
-        guiFrame = new Frame();
+        createStartUpScene();
+    }
 
-        // Set size of the Frame
-        guiFrame.setSize(GUI_FRAME_WIDTH, GUI_FRAME_HEIGHT);
+    private void createStartUpScene()
+    {
+        Button joinNetworkBtn = new Button();
+        joinNetworkBtn.setText("Join Network");
 
-        // Set frame buffers
-        //guiFrame.setLayout(new FlowLayout(FlowLayout.CENTER, 0, 0));
+        Button createNetworkBtn = new Button();
+        createNetworkBtn.setText("Create Network");
 
-        // Add closing functionality
-        guiFrame.addWindowListener(new WindowAdapter() {
-            public void windowClosing(WindowEvent windowEvent){
-                System.exit(0);
-            }
+        Label usernameLabel = new Label("Username: ");
+        TextField usernameTextField = new TextField();
+
+        joinNetworkBtn.setOnAction( (ActionEvent e) -> {
+
+            username = usernameTextField.getText();
+            System.out.println("Joining Network");
+
+            FileChooser invFileChooser = new FileChooser();
+            invFileChooser.setTitle("Select Invitation File");
+            File file = invFileChooser.showOpenDialog(startUpStage);
+
+            System.out.println("Username: " + username);
+            System.out.println("Opening file: " + file.getName());
+
+            createMainStage();
+
+            mainStage.show();
+            startUpStage.close();
         });
 
-        // Add Menu Bar
-        createMenu();
-        // Create table
-        createTable();
+        createNetworkBtn.setOnAction((ActionEvent e) -> {
 
-        guiFrame.setVisible(true);
+            username = usernameTextField.getText();
+            System.out.println("Creating Network");
+            System.out.println("Username: " + username);
 
-        guiPanel = new Panel();
+            createMainStage();
 
-        // Add created panel
-        guiFrame.add(guiPanel);
+            mainStage.show();
+            startUpStage.close();
+        });
+
+        startUpGrid = new GridPane();
+        startUpGrid.setAlignment(Pos.CENTER);
+        startUpGrid.setHgap(10);
+        startUpGrid.setVgap(10);
+        //startUpGrid.setPadding(new Insets(25, 25, 25, 25));
+
+        startUpGrid.add(usernameLabel, 0, 0);
+        startUpGrid.add(usernameTextField, 1, 0);
+        startUpGrid.add(joinNetworkBtn, 0, 1);
+        startUpGrid.add(createNetworkBtn, 1, 1);
+
+        startUpScene = new Scene(startUpGrid, 300, 250);
+
+        startUpStage = new Stage();
+        startUpStage.setScene(startUpScene);
+        startUpStage.initModality(Modality.APPLICATION_MODAL);
+        startUpStage.setTitle("P2P File Sharing");
+
+        startUpStage.show();
     }
 
-    private void createMenu()
+    private void createMainStage()
     {
-        // Create new Menu Bar
-        MenuBar guiMenu = new MenuBar();
+        mainGrid = new GridPane();
 
-        // Create Groups Menu
-        Menu groupsMenu = new Menu("Groups");
+        Label temp = new Label("Main Grid is now the active scene. Username: " + username);
 
-        // Create Group Menu Items
-        MenuItem joinGroup = new MenuItem("Join Group");
-        MenuItem inviteUser = new MenuItem("Invite User");
+        mainTableView = new TableView();
 
-        // Add listners to each menu Item
-        MenuItemListener mListener = new MenuItemListener();
+        TableColumn col_0 = new TableColumn("1");
+        col_0.setMinWidth(100);
+        TableColumn col_1 = new TableColumn("2");
+        col_1.setMinWidth(100);
+        TableColumn col_2 = new TableColumn("3");
+        col_2.setMinWidth(100);
+        TableColumn col_3 = new TableColumn("4");
+        col_3.setMinWidth(100);
+        TableColumn col_4 = new TableColumn("5");
+        col_4.setMinWidth(100);
 
-        joinGroup.addActionListener(mListener);
-        inviteUser.addActionListener(mListener);
-
-        // Add items to Group Menu
-        groupsMenu.add(joinGroup);
-        groupsMenu.add(inviteUser);
-
-        // Add Group Menu to Menu Bar
-        guiMenu.add(groupsMenu);
-
-        // Add Menu Bar to Frame
-        guiFrame.setMenuBar(guiMenu);
-        guiFrame.setVisible(true);
-    }
-
-    private void createTable()
-    {
-        // Define column Names
-        String[] colNames = {"Username", "Filename", "button1", "button2"};
-        Object[][] tableData =
-        {
-                {"User 1", "", "", "new"},
-                {"", "File1", "Update", "Remove"},
-                {"User 2", "", "", ""},
-                {"", "File1", "", "", "get"}
-        };
-
-        // Create Table
-        DefaultTableModel dTable = new DefaultTableModel(tableData, colNames);
-        JTable guiTable = new JTable(dTable);
-
-        // Remove table gridlines
-        guiTable.setShowGrid(false);
-
-        // Add Border
-        Color borderColor = new Color(0);
-        MatteBorder tableBorder = new MatteBorder(1, 1, 1, 1, borderColor);
-        guiTable.setBorder(tableBorder);
+        mainTableView.getColumns().addAll(col_0, col_1, col_2, col_3, col_4);
 
 
-        guiFrame.add(guiTable);
-    }
 
-    class MenuItemListener implements ActionListener {
-        public void actionPerformed(ActionEvent e) {
-            JOptionPane.showMessageDialog( null,
-                    "You pressed: " + e.getActionCommand() );
+        mainGrid.add(mainTableView,0,0);
 
-        }
+        mainScene = new Scene(mainGrid, 500, 500);
+        mainStage = new Stage();
+        mainStage.setScene(mainScene);
+        mainStage.setTitle("P2P File Sharing");
     }
 }
 

@@ -1,3 +1,5 @@
+import javafx.application.Application;
+
 /*****************************************************************************************
  * <p>
  * Class Name:     CLASS_NAME
@@ -14,8 +16,6 @@ public class P2PFSGui_test
 {
     public static void main(String[] args)
     {
-        P2PFSGui gui = new P2PFSGui();
-
-        gui.createGui();
+        Application.launch(P2PFSGui.class, args);
     }
 }
