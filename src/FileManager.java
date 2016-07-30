@@ -1,30 +1,65 @@
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-
+import java.io.PrintStream;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Map;
 import utilities.Pair;
 
 
-public class FileManager implements FileManagerGUI_IF, FileManagerCoordinator_IF {
+public class FileManager implements FileManagerGUI_IF, FileManagerCoordinator_IF, FileManagerUserManager_IF {
 	private static final String  PUBLIC_DIRECTORY = "./Public/";
 	private static final String  GOLDEN_CHEST_DIRECTORY = "./GoldenChest/";
+	private static final String INVITATION_FILE_NAME = "invitation.txt";
 	private ArrayList<String>              golden_chest;
 	private Map<String, ArrayList<String> > file_ledger;
 	private Map<Pair<String, String>, FileInputStream>     pending_sending_files; // each entry is <username, filename>, fileinputstream
 	private Map<Pair<String, String>, FileOutputStream>    pending_recving_files; // each entry is <username, filename>, fileoutputstream
 	
-	private static void copyFiles(String indir, String outdir) throws FileNotFoundException, IOException{
+	FileManager(){
+		File golden_chest_dir = new File(GOLDEN_CHEST_DIRECTORY);
+		golden_chest_dir.mkdirs();
+		File public_dir = new File(PUBLIC_DIRECTORY);
+		public_dir.mkdirs();
+	}
+	
+	private static void copyFiles(File in_file, String outdir) throws FileNotFoundException, IOException{
 		int b;
 		try (
-				FileInputStream in = new FileInputStream(indir); 
+				FileInputStream in = new FileInputStream(in_file); 
 				FileOutputStream out = new FileOutputStream(outdir);
 		) {
 			while((b = in.read()) != -1){
 				out.write(b);
 			}			
+		}
+	}
+	
+	public String generateInvitationFile(String IP){
+		try (
+		PrintStream out = new PrintStream(new FileOutputStream(PUBLIC_DIRECTORY + INVITATION_FILE_NAME));
+		){
+			out.print(IP);
+		} catch (FileNotFoundException e){
+			// Should never happen since constructor should be called before...
+		}
+		return (PUBLIC_DIRECTORY + INVITATION_FILE_NAME);
+	}
+	
+	public void addNetworkFile(String filename, String username){
+		if(file_ledger.containsKey(username)){
+			// NetworkCoordinator: Notify user name requested not found
+		} else {
+			ArrayList<String> file_list = file_ledger.get(username);
+			if(file_list.contains(filename)){
+				// Network Coordinator: Notify file by this user already exists
+				updateNetworkFile(filename, username);
+			} else {
+				file_list.add(filename);
+			}
 		}
 	}
 	
@@ -78,15 +113,16 @@ public class FileManager implements FileManagerGUI_IF, FileManagerCoordinator_IF
 		}
 	}
 	
-	public void addUserFile(String filename, String directory) {
+	public void addUserFile(File f) {
 		// If golden chest already has a file with this name, we update instead of add
-		if(golden_chest.contains(filename)){
-			updateUserFile(filename, directory);
+		if(golden_chest.contains(f.getName())){
+			updateUserFile(f);
 			return;
 		}
 		try {
-			copyFiles(directory + "/" + filename, GOLDEN_CHEST_DIRECTORY + filename);
-			golden_chest.add(filename);
+			copyFiles(f, GOLDEN_CHEST_DIRECTORY + f.getName());
+			golden_chest.add(f.getName());
+			// NetworkCoordinator: Send a BCAST message addFile
 			// GUI: Notify Success
 		} catch(FileNotFoundException e) {
 			// GUI: Notify File not Found
@@ -113,14 +149,16 @@ public class FileManager implements FileManagerGUI_IF, FileManagerCoordinator_IF
 			// GUI: Notify file not found in golden chest
 			return;
 		}
+		File f = new File(GOLDEN_CHEST_DIRECTORY + filename);
+		f.delete();
 		// NetworkCoordinator: Send a BCAST removeFile Message
 		// GUI: Notify file successfully removed
 	}
 	
-	public void updateUserFile(String filename, String directory){
-		if(golden_chest.contains(filename)){
+	public void updateUserFile(File f){
+		if(golden_chest.contains(f.getName())){
 			try {
-				copyFiles(directory + "/" + filename, GOLDEN_CHEST_DIRECTORY + filename);
+				copyFiles(f, GOLDEN_CHEST_DIRECTORY + f.getName());
 				// NetworkCoordinator: Send a BCAST updateFile Message
 				// GUI: Notify successful file update
 			} catch (FileNotFoundException e) {
