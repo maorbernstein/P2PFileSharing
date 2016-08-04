@@ -43,14 +43,15 @@ public class UserManager implements UserManagerGUI_IF, UserManagerCoordinator_IF
 		return user_ledger.values();
 	}
 	
-	public void addNetworkUser(String username, String IP) {
+	public boolean addNetworkUser(String username, String IP) {
 		if(user_ledger.containsKey(username) || (username == own_user_name) ){
 			// Notify Coordinator that user name already exists
-		} else {
-			user_ledger.put(username, IP);
-			filemanager.addUser(username);
-			// GUI: Notify that new user has been added
+			return false;
 		}
+		user_ledger.put(username, IP);
+		filemanager.addUser(username);
+		// GUI: Notify that new user has been added
+		return true;
 	}
 	
 	public void removeNetworkUser(String username, String ip){
@@ -109,5 +110,9 @@ public class UserManager implements UserManagerGUI_IF, UserManagerCoordinator_IF
 	
 	public void close(){
 		net_coordinator.exit();
+	}
+
+	public String getMyUsername() {
+		return own_user_name;
 	}
 }
