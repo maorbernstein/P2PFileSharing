@@ -1,5 +1,5 @@
 public interface GUINetworkCoordinator_IF
 {
     public void connectionStatus(boolean established);
-    public void downloadStarted();
+    public void uploadStarted(String user, String filename);
 }
