@@ -3,11 +3,8 @@ import javafx.event.ActionEvent;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
-import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.GridPane;
-import javafx.scene.layout.HBox;
-import javafx.scene.text.Text;
 import javafx.stage.Stage;
 
 /*****************************************************************************************
@@ -24,10 +21,12 @@ import javafx.stage.Stage;
  ****************************************************************************************/
 public class P2PFSGui_test extends Application
 {
+    P2PFSGui gui;
+
     @Override
     public void start(Stage primaryStage) throws Exception
     {
-        P2PFSGui gui = new P2PFSGui();
+        gui = new P2PFSGui();
 
         gui.start(primaryStage);
 
