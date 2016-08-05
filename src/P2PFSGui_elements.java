@@ -287,24 +287,26 @@ public class P2PFSGui_elements
         return vb;
     }
 
-    public void closeGui()
+    // Checks if all downloads are finished before closing the GUI
+    public boolean closeGui()
     {
+        //TODO: Add removeUser command here
+
         System.out.println("Number of Users Downloading Items = " + uploadingList.size());
 
         if (uploadingList.size() > 0)
         {
             P2PFSGui_notification notify = new P2PFSGui_notification();
 
-            notify.createNotification("Users are still downloading files. \nApplication will close " +
-                    "when all downloads are finished", "Finishing downloads");
+            notify.createNotification("Users are still downloading files. \nPlease wait until " +
+                    "all downloads are finished", "Finishing downloads");
 
+            return false;
         } else
         {
             System.out.println("Closing Gui");
+            return true;
         }
-
-        stage.close();
-
     }
 }
 
