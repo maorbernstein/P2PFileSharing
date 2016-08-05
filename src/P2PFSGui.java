@@ -1,5 +1,6 @@
 import javafx.application.Application;
 import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
@@ -8,6 +9,7 @@ import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
+import javafx.stage.WindowEvent;
 
 import java.io.File;
 import java.util.NoSuchElementException;
@@ -191,6 +193,16 @@ public class P2PFSGui extends Application implements
         guiElems.setStage(new Stage());
         guiElems.getStage().setScene(guiElems.getScene());
         guiElems.getStage().setTitle("P2P File Sharing");
+
+        // Prevents GUI from exiting while files are still being downloaded
+        guiElems.getScene().getWindow().setOnCloseRequest(new EventHandler<WindowEvent>() {
+            public void handle(WindowEvent ev) {
+                if (!guiElems.closeGui())
+                {
+                    ev.consume();
+                }
+            }
+        });
     }
 
     private Boolean checkUsername()
@@ -390,9 +402,4 @@ public class P2PFSGui extends Application implements
         System.out.println("Upload Started");
     }
 
-    @Override
-    public void stop()
-    {
-        guiElems.closeGui();
-    }
 }
