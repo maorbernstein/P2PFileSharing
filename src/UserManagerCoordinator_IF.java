@@ -8,4 +8,7 @@ public interface UserManagerCoordinator_IF {
 	public String getNetworkUserName(String IP);
 	public String getNetworkUserIP(String username);
 	public Collection<String> getAllIPs();
+	
+	public boolean isUsernameTaken(String username);
+	
 }
