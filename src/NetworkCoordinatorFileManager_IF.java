@@ -1,9 +1,11 @@
 
 public interface NetworkCoordinatorFileManager_IF {
-
-	public void addFile(String filename);
-	public void getFile(String username, String filename);
-	public void updateFile(String filename);
-	public void removeFile(String filename);
 	
+	// BCASTS
+	public void addFileBcast(String filename);
+	public void updateFileBcast(String filename);
+	public void removeFileBcast(String filename);
+
+	// Get File
+	public void getFile(String username, String filename);
 }
