@@ -1,3 +1,4 @@
+import java.util.Iterator;
 import java.util.List;
 
 // File Manager Interface to the NetworkCoordinator (handles Network requests)
@@ -11,7 +12,6 @@ public interface FileManagerCoordinator_IF {
 	public void readNetworkFileInit(String username, String filename);
 	public int readNetworkFileChunk(String username, String filename, byte[] bytes);
 	public void readNetworkFileDone(String username, String filename);
-	
-	public List<String> getOwnFiles();
+	public Iterator<String> getOwnFiles();
 	public void removeAllNetworkFile(String username);
 }
