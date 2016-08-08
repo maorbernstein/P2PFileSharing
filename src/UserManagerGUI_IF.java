@@ -5,5 +5,7 @@ public interface UserManagerGUI_IF {
 	public void createGroup(String username) throws NoIPFoundException;
 	public void joinGroup(File invitation, String username) throws NoIPFoundException;
 	public void close();
+
+	// dwei: Is there a special method for a local user to leave the group? or should I just use close()?
 	
 }
