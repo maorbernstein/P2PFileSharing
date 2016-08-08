@@ -21,9 +21,10 @@ import java.io.File;
  *  IDE Used:       Intellij 2016.1.3
  *  <p>
  ****************************************************************************************/
-public class P2PFSGui_file
+class P2PFSGui_file
 {
     private String filename;
+    private String username;
     private FileStatus status;
     private double downloadProgress;
     private double uploadProgress;
@@ -41,14 +42,15 @@ public class P2PFSGui_file
     private final int MAX_FILENAME_CHARS = 50;
 
     // enum for file status
-    public enum FileStatus
+    enum FileStatus
     {
         newFile, downloadingFile, normalFile, updatedFile, uploadingFile
     };
 
-    public P2PFSGui_file(String file, P2PFSGui_elements elem, Boolean me)
+    P2PFSGui_file(String file, String user, P2PFSGui_elements elem, Boolean me)
     {
         filename = file;
+        username = user;
         isMe = me;
         downloadProgress = 0;
         uploadProgress = 0;
@@ -69,7 +71,7 @@ public class P2PFSGui_file
     }
 
     // Constructor if file is definitely not for local user
-    public P2PFSGui_file(String file, P2PFSGui_elements elem)
+    P2PFSGui_file(String file, P2PFSGui_elements elem)
     {
         filename = file;
         isMe = false;
@@ -80,7 +82,7 @@ public class P2PFSGui_file
         guiElem = elem;
     }
 
-    public void setStatus(FileStatus st)
+    void setStatus(FileStatus st)
     {
         switch(st)
         {
@@ -107,17 +109,17 @@ public class P2PFSGui_file
         }
     }
 
-    public FileStatus getStatus()
+    FileStatus getStatus()
     {
         return status;
     }
 
-    public String getFilename()
+    String getFilename()
     {
         return filename;
     }
 
-    public void setUploadProgress(double progress)
+    void setUploadProgress(double progress)
     {
         if(progress < 1 && progress > 0)
             uploadProgress = progress;
@@ -125,7 +127,7 @@ public class P2PFSGui_file
         guiElem.redraw();
     }
 
-    public void setDownloadProgress(double progress)
+    void setDownloadProgress(double progress)
     {
         if(progress < 1 && progress > 0)
             downloadProgress = progress;
@@ -134,7 +136,7 @@ public class P2PFSGui_file
     }
 
     // Create HBox for file
-    public HBox createHBox()
+    HBox createHBox()
     {
         HBox hb = new HBox();
 
@@ -169,17 +171,25 @@ public class P2PFSGui_file
 
             updateBtn.setOnAction( (ActionEvent e) -> {
                 FileChooser invFileChooser = new FileChooser();
-                invFileChooser.setTitle("Select File to Add");
+                invFileChooser.setTitle("Select File to Update");
                 File updatedFile = invFileChooser.showOpenDialog(guiElem.getStage());
 
-                // TODO: Add file manager update here
+                if(updatedFile.getName().equals(filename))
+                {
+                    System.out.println("Updated file: " + updatedFile.getName());
+                    //guiElem.getFm().updateUserFile(updatedFile);
+                }
+                else
+                {
+                    P2PFSGui_notification.createError("Filenames do not match");
+                }
             });
 
             removeBtn.setOnAction( (ActionEvent e) -> {
                 guiElem.getMe().removeFile(filename);
+                //guiElem.getFm().removeUserFile(filename);
 
                 guiElem.redraw();
-                // TODO: Add file manager remove here
             });
 
             hb.getChildren().add(updateBtn);
@@ -207,7 +217,7 @@ public class P2PFSGui_file
                 hb.getChildren().add(getBtn);
 
                 getBtn.setOnAction( (ActionEvent e) -> {
-                    //TODO: Add download action here
+                    //guiElem.getFm().getUserFile(filename, username);
 
                     setStatus(FileStatus.downloadingFile);
 

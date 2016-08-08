@@ -1,3 +1,4 @@
+import javafx.animation.PauseTransition;
 import javafx.application.Application;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -10,6 +11,7 @@ import javafx.stage.FileChooser;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
+import javafx.util.Duration;
 
 import java.io.File;
 import java.util.NoSuchElementException;
@@ -53,10 +55,20 @@ public class P2PFSGui extends Application implements
     private final int USERNAME_MAX_LENGTH = 10;
     private final int USERNAME_MIN_LENGTH = 3;
 
+    // Bools to determine connection state
+    private boolean connection;
+    private boolean unameOk;
+
+    // Create Timeout
+    private PauseTransition timeout;
+
     // Start the GUI
     @Override
     public void start(Stage mainStage)
     {
+        connection = false;
+        unameOk = false;
+
         // Send GUI Stage element to guiElems
         guiElems = new P2PFSGui_elements(mainStage);
 
@@ -96,24 +108,40 @@ public class P2PFSGui extends Application implements
                 System.out.println("Username verified");
                 System.out.println("Username: " + username);
 
-                if(true) // TODO: add join network code here
+                /*try
                 {
-                    System.out.println("Network joined successfully");
-
-                    createMainStage();
-
-                    P2PFSGui_user me = new P2PFSGui_user(username, guiElems, true);
-                    guiElems.setMe(me);
-                    guiElems.redraw();
-
-                    guiElems.getStage().show();
-                    startUpStage.close();
-                }
-                else
+                    guiElems.getUm().joinGroup(file, username);
+                } catch (NoIPFoundException e1)
                 {
-                    System.out.println("Failed to join network");
-                    notify.createError("Failed to join network");
+                    notify.createError("Invalid Invitation file");
                 }
+                */
+
+                timeout = new PauseTransition(Duration.seconds(guiElems.GUI_TIMEOUT_SEC));
+
+                P2PFSGui_notification.createLoadingPopup();
+                timeout.setOnFinished(event ->
+                {
+                    if (connection && unameOk)
+                    {
+                        System.out.println("Network joined successfully");
+
+                        createMainStage();
+
+                        P2PFSGui_user me = new P2PFSGui_user(username, guiElems, true);
+                        guiElems.setMe(me);
+                        guiElems.redraw();
+
+                        guiElems.getStage().show();
+                        startUpStage.close();
+                    } else
+                    {
+                        System.out.println("Failed to join network");
+                        notify.createError("Failed to join network");
+                    }
+                });
+
+                timeout.play();
             }
         });
 
@@ -128,15 +156,38 @@ public class P2PFSGui extends Application implements
                 System.out.println("Username verified");
                 System.out.println("Username: " + username);
 
-                createMainStage();
+                //try
+                //{
+                //    guiElems.getUm().createGroup(username);
 
-                // Set current user as main user.
-                P2PFSGui_user me = new P2PFSGui_user(username, guiElems, true);
-                guiElems.setMe(me);
-                guiElems.redraw();
+                        timeout = new PauseTransition(Duration.seconds(guiElems.GUI_TIMEOUT_SEC));
 
-                guiElems.getStage().show();
-                startUpStage.close();
+                        P2PFSGui_notification.createLoadingPopup();
+
+                        timeout.setOnFinished(event ->
+                        {
+                            if(connection && unameOk)
+                            {
+                                createMainStage();
+
+                                // Set current user as main user.
+                                P2PFSGui_user me = new P2PFSGui_user(username, guiElems, true);
+                                guiElems.setMe(me);
+                                guiElems.redraw();
+
+                                guiElems.getStage().show();
+
+                                startUpStage.close();
+                            }
+                        });
+
+                        timeout.play();
+                //}
+                //catch (NoIPFoundException e3)
+                //{
+                //    notify.createError("Failed to Create Network");
+                //    System.out.println("Failed to Create Network");
+                //}
             }
         });
 
@@ -177,11 +228,21 @@ public class P2PFSGui extends Application implements
         //
         final Button inviteBtn = new Button("Invite");
         inviteBtn.setOnAction( (ActionEvent e) -> {
-            // TODO: Add generate Invitation file
-            // TODO: Print out Invitation file Location
 
-            notify.createNotification("Invitation file Generated at \nDIRECTORY", "Invitation File Generated");
-            System.out.println("Generated Invitation File");
+            //try
+            //{
+                String directory  = new String ("Directory");
+            //    directory = guiElems.getUm().generateInvitationFile();
+
+                notify.createNotification("Invitation file Generated at \n" + directory,
+                        "Invitation File Generated");
+                System.out.println("Generated Invitation File");
+            //}
+            //catch (NoIPFoundException e1)
+            // {
+             //   notify.createError("Failed to generate Invitation File");
+             //   System.out.println("Failed to generate Invitation File");
+            //}
         });
 
         // Create ScrollPane to contain all elements and add scroll bar
@@ -303,66 +364,46 @@ public class P2PFSGui extends Application implements
     }
 
     @Override
-    public void addNewFile(String[][] files)
+    public void addNewFile(String user, String filename)
     {
-        for(int i = 0; i < files.length; i++)
-        {
-            for (int j = 1; j < files[i].length; j++)
-            {
-                // TODO: fix the file name / username
-                guiElems.getUser(files[i][0]).addFile(
-                        new P2PFSGui_file(files[i][j], guiElems, false));
+        guiElems.getUser(user).addFile(
+                new P2PFSGui_file(filename, user, guiElems, false));
 
-                System.out.println("Added User: " + files[i][0] + " Filename: " + files[i][j]);
-            }
+        System.out.println("Added User: " + user + " Filename: " + filename);
+        guiElems.redraw();
+    }
+
+    @Override
+    public void removeFile(String user, String filename)
+    {
+        try
+        {
+            // TODO: fix the file name / username
+            guiElems.getUser(user).removeFile(filename);
+            System.out.println("Removed User: " + user + " Filename: " + filename);
+        } catch (NoSuchElementException e)
+        {
+            System.out.println("Remove Element not found. \n    Username: " + user
+                    + "\n   Filename: " + filename);
         }
 
         guiElems.redraw();
     }
 
     @Override
-    public void removeFile(String[][] files)
+    public void updateFile(String user, String filename)
     {
-        for(int i = 0; i < files.length; i++)
+        // TODO: fix the file name / username
+        try
         {
-            for (int j = 1; j < files[i].length; j++)
-            {
-                try
-                {
-                    // TODO: fix the file name / username
-                    guiElems.getUser(files[i][0]).removeFile(files[i][j]);
-                    System.out.println("Removed User: " + files[i][0] + " Filename: " + files[i][j]);
-                } catch (NoSuchElementException e)
-                {
-                    System.out.println("Remove Element not found. \n    Username: " + files[i][0]
-                            + "\n   Filename: " + files[i][j]);
-                }
-            }
-        }
-
-        guiElems.redraw();
-    }
-
-    @Override
-    public void updateFile(String[][] files)
-    {
-        for(int i = 0; i < files.length; i++)
+            guiElems.getUser(user).getFile(
+                    filename).setStatus(P2PFSGui_file.FileStatus.updatedFile);
+        }catch (NoSuchElementException e)
         {
-            for (int j = 1; j < files[i].length; j++)
-            {
-                // TODO: fix the file name / username
-                try
-                {
-                    guiElems.getUser(files[i][0]).getFile(
-                            files[i][j]).setStatus(P2PFSGui_file.FileStatus.updatedFile);
-                }catch (NoSuchElementException e)
-                {
-                    System.out.println("Update Element not found. \n    Username: " + files[i][0]
-                            + "\n   Filename: " + files[i][j]);
-                }
-                System.out.println("Updated User: " + files[i][0] + " Filename: " + files[i][j]);
-            }
+            System.out.println("Update Element not found. \n    Username: " + user
+                    + "\n   Filename: " + filename);
         }
+        System.out.println("Updated User: " + user + " Filename: " + filename);
 
         guiElems.redraw();
     }
@@ -382,17 +423,28 @@ public class P2PFSGui extends Application implements
     }
 
     @Override
-    public void connectionStatus(boolean established)
+    public void connectionStatus(boolean established, boolean usernameOk)
     {
+        connection = established;
+        unameOk = usernameOk;
+
         if (!established)
         {
-            notify.createError("Connection Failure");
-            System.out.println("Connection Failure");
+            notify.createError("Failed to connect to Network");
+            System.out.println("Failed to connect to Network");
         } else
         {
             System.out.println("Connection Successful");
 
+            if(!usernameOk)
+            {
+                notify.createError("Username already taken");
+                System.out.println("Username taken");
+            }
         }
+
+        P2PFSGui_notification.destroyLoadingPopup();
+        timeout.jumpTo(Duration.seconds(guiElems.GUI_TIMEOUT_SEC));
     }
 
     @Override
@@ -401,5 +453,4 @@ public class P2PFSGui extends Application implements
         guiElems.upload(user, filename);
         System.out.println("Upload Started");
     }
-
 }

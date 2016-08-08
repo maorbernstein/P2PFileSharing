@@ -21,7 +21,7 @@ import javafx.stage.Stage;
  ****************************************************************************************/
 public class P2PFSGui_test extends Application
 {
-    P2PFSGui gui;
+    private P2PFSGui gui;
 
     @Override
     public void start(Stage primaryStage) throws Exception
@@ -77,6 +77,7 @@ public class P2PFSGui_test extends Application
 
         Button connSucc = new Button("Connection Ok");
         Button connFail = new Button("Connection Fail");
+        Button uTaken = new Button("Username Taken");
         Button fileIOEx = new Button("Throw I/O Ex");
         Button fileNotFound = new Button("Throw File Not Found Ex");
         Button fileOpSucc = new Button("File Op Success");
@@ -113,12 +114,12 @@ public class P2PFSGui_test extends Application
         testGrid.add(downloadPercentFilenameTF, 2, 8);
         testGrid.add(downloadPercentTF, 3, 8);
 
-
         testGrid.add(connSucc, 0, 10);
         testGrid.add(connFail, 1, 10);
-        testGrid.add(fileIOEx, 2, 10);
+        testGrid.add(uTaken, 2, 10);
         testGrid.add(fileNotFound, 0, 11);
         testGrid.add(fileOpSucc, 1, 11);
+        testGrid.add(fileIOEx, 2, 11);
 
         // Create scene
         Scene testScene = new Scene(testGrid, 700, 400);
@@ -139,11 +140,8 @@ public class P2PFSGui_test extends Application
 
         addFileBtn.setOnAction((ActionEvent e) ->
         {
-            String[][] file = new String[1][2];
-            file[0][0] = addFileUserTF.getText();
-            file[0][1] = addFileFilenameTF.getText();
 
-            gui.addNewFile(file);
+            gui.addNewFile( addFileUserTF.getText(), addFileFilenameTF.getText());
         });
 
         removeUserBtn.setOnAction((ActionEvent e) ->
@@ -153,20 +151,14 @@ public class P2PFSGui_test extends Application
 
         removeFileBtn.setOnAction((ActionEvent e) ->
         {
-            String[][] file = new String[1][2];
-            file[0][0] = removeFileUserTF.getText();
-            file[0][1] = removeFileFilenameTF.getText();
 
-            gui.removeFile(file);
+            gui.removeFile( removeFileUserTF.getText(), removeFileFilenameTF.getText());
         });
 
         updateFileBtn.setOnAction((ActionEvent e) ->
         {
-            String[][] file = new String[1][2];
-            file[0][0] = updateFileUserTF.getText();
-            file[0][1] = updateFileFilenameTF.getText();
 
-            gui.updateFile(file);
+            gui.updateFile( updateFileUserTF.getText(), updateFileFilenameTF.getText());
         });
 
         uploadFileBtn.setOnAction((ActionEvent e) ->
@@ -191,11 +183,15 @@ public class P2PFSGui_test extends Application
 
         connSucc.setOnAction((ActionEvent e) ->
         {
-            gui.connectionStatus(true);
+            gui.connectionStatus(true, true);
         });
         connFail.setOnAction((ActionEvent e) ->
         {
-            gui.connectionStatus(false);
+            gui.connectionStatus(false, true);
+        });
+        uTaken.setOnAction((ActionEvent e) ->
+        {
+            gui.connectionStatus(true, false);
         });
         fileIOEx.setOnAction((ActionEvent e) ->
         {

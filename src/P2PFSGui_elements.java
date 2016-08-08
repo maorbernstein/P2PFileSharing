@@ -1,13 +1,12 @@
-import javafx.collections.ObservableList;
-import javafx.scene.Node;
 import javafx.scene.Scene;
-import javafx.scene.control.*;
+import javafx.scene.control.ScrollPane;
+import javafx.scene.control.Tab;
+import javafx.scene.control.TabPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.NoSuchElementException;
 
 /*****************************************************************************************
@@ -23,11 +22,14 @@ import java.util.NoSuchElementException;
  *  IDE Used:       Intellij 2016.1.3
  *  <p>
  ****************************************************************************************/
-public class P2PFSGui_elements
+class P2PFSGui_elements
 {
     private ScrollPane SP;
     private Scene scene;
     private Stage stage;
+
+    private FileManager fm;
+    //private UserManager um;
 
     // Define Array lists for 3 types of lists
     // -- List of users who are local user (Only one user)
@@ -37,45 +39,57 @@ public class P2PFSGui_elements
     // -- List of users who are downloading from us
     private ArrayList<P2PFSGui_user> uploadingList;
 
-    public final int MAX_WINDOW_HEIGHT = 500;
-    public final int MAX_WINDOW_WIDTH = 510;
+    final int MAX_WINDOW_HEIGHT = 500;
+    final int MAX_WINDOW_WIDTH = 510;
 
-    public final int POPUP_WINDOW_HEIGHT = 100;
-    public final int POPUP_WINDOW_WIDTH = 300;
+    final int POPUP_WINDOW_HEIGHT = 150;
+    final int POPUP_WINDOW_WIDTH = 300;
 
-    public P2PFSGui_elements(Stage s)
+    final int GUI_TIMEOUT_SEC = 60;
+
+    P2PFSGui_elements(Stage s)
     {
         stage = s;
 
         myList = new ArrayList<P2PFSGui_user>();
         userList = new ArrayList<P2PFSGui_user>();
         uploadingList = new ArrayList<P2PFSGui_user>();
+
+        //fm = new FileManager();
+        //um = new UserManager();
     }
 
-    public Scene getScene()
+    Scene getScene()
     {
         return scene;
     }
 
-    public ScrollPane getScrollPane()
+    ScrollPane getScrollPane()
     {
         return SP;
     }
 
-    public Stage getStage()
+    Stage getStage()
     {
         return stage;
     }
 
+    /*
+    UserManager getUm()
+    {
+        return um;
+    }
+    */
+
+    FileManager getFm()
+    {
+        return fm;
+    }
     private P2PFSGui_user getUser(ArrayList<P2PFSGui_user> list, String name)
     {
-        Iterator userItr = list.iterator();
-
         // Search for User
-        while (userItr.hasNext())
+        for (P2PFSGui_user user : list)
         {
-            P2PFSGui_user user = (P2PFSGui_user) userItr.next();
-
             if (user.getUsername().equals(name))
             {
                 return user;
@@ -86,12 +100,12 @@ public class P2PFSGui_elements
         throw new NoSuchElementException();
     }
 
-    public P2PFSGui_user getMe()
+    P2PFSGui_user getMe()
     {
         return myList.get(0);
     }
 
-    public P2PFSGui_user getUser(String name)
+    P2PFSGui_user getUser(String name)
     {
        try
         {
@@ -102,7 +116,7 @@ public class P2PFSGui_elements
         }
     }
 
-    public P2PFSGui_user getUploadUser(String name)
+    P2PFSGui_user getUploadUser(String name)
     {
         try
         {
@@ -113,41 +127,38 @@ public class P2PFSGui_elements
         }
     }
 
-    public void setScene(Scene s)
+    void setScene(Scene s)
     {
         scene = s;
     }
 
-    public void setScrollPane(ScrollPane s)
+    void setScrollPane(ScrollPane s)
     {
         SP = s;
     }
 
-    public void setStage(Stage s)
+    void setStage(Stage s)
     {
         stage = s;
     }
 
-    public void setMe(P2PFSGui_user user)
+    void setMe(P2PFSGui_user user)
     {
         myList.add(user);
     }
 
     // Add and Remove users
-    public void addUser(P2PFSGui_user user)
+    void addUser(P2PFSGui_user user)
     {
         userList.add(user);
         redraw();
     }
 
-    public void removeUser(String name)
+    void removeUser(String name)
     {
-        Iterator userItr = userList.iterator();
 
-        while (userItr.hasNext())
+        for (P2PFSGui_user user : userList)
         {
-            P2PFSGui_user user = (P2PFSGui_user) userItr.next();
-
             if (user.getUsername().equals(name))
             {
                 userList.remove(user);
@@ -158,7 +169,7 @@ public class P2PFSGui_elements
         redraw();
     }
 
-    public void upload(String user, String filename)
+    void upload(String user, String filename)
     {
         // Create new file
         P2PFSGui_file file = new P2PFSGui_file(filename, this);
@@ -185,7 +196,7 @@ public class P2PFSGui_elements
         redraw();
     }
 
-    public void finishUpload(String user, String filename)
+    void finishUpload(String user, String filename)
     {
         // Set Download User
         P2PFSGui_user upldUser;
@@ -207,7 +218,7 @@ public class P2PFSGui_elements
 
         redraw();
     }
-    public void finishDownload(String user, String filename)
+    void finishDownload(String user, String filename)
     {
         // Set Download User
         P2PFSGui_user dnldUser;
@@ -226,7 +237,7 @@ public class P2PFSGui_elements
     }
 
     // Redraw the GUI
-    public void redraw()
+    void redraw()
     {
         // Get current TabPane
         TabPane oldTP = (TabPane) SP.getContent();
@@ -236,21 +247,21 @@ public class P2PFSGui_elements
 
         // Add Create new tabs for each type of files
         Tab myFilesTab = new Tab();
-        Tab dnldToMeTab = new Tab();
-        Tab dnldFromMeTab = new Tab();
+        Tab networkFilesTab = new Tab();
+        Tab requestedFilesTab = new Tab();
 
         // Create the tabs and create VBox with content from lists
         myFilesTab.setText("My Files");
         myFilesTab.setContent(createVB(myList));
-        dnldFromMeTab.setText("Downloading From Me");
-        dnldFromMeTab.setContent(createVB(uploadingList));
-        dnldToMeTab.setText("Download To Me");
-        dnldToMeTab.setContent(createVB(userList));
+        networkFilesTab.setText("Network Files");
+        networkFilesTab.setContent(createVB(userList));
+        requestedFilesTab.setText("Requested Files");
+        requestedFilesTab.setContent(createVB(uploadingList));
 
         // Add tabs to TabPane
         tp.getTabs().add(myFilesTab);
-        tp.getTabs().add(dnldToMeTab);
-        tp.getTabs().add(dnldFromMeTab);
+        tp.getTabs().add(networkFilesTab);
+        tp.getTabs().add(requestedFilesTab);
 
         // Set tabs to not have any close buttons
         tp.setTabClosingPolicy(TabPane.TabClosingPolicy.UNAVAILABLE);
@@ -272,12 +283,8 @@ public class P2PFSGui_elements
                 "-fx-border-width: 2;" +
                 "-fx-border-insets: 5;");
 
-        Iterator userItr = list.iterator();
-
-        while (userItr.hasNext())
+        for (P2PFSGui_user user : list)
         {
-            P2PFSGui_user user = (P2PFSGui_user) userItr.next();
-
             for (HBox hb : user.getHBoxList())
             {
                 vb.getChildren().add(hb);
@@ -288,8 +295,9 @@ public class P2PFSGui_elements
     }
 
     // Checks if all downloads are finished before closing the GUI
-    public boolean closeGui()
+    boolean closeGui()
     {
+
         //TODO: Add removeUser command here
 
         System.out.println("Number of Users Downloading Items = " + uploadingList.size());
