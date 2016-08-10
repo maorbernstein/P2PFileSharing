@@ -5,6 +5,7 @@ import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketAddress;
+import java.util.ArrayList;
 import java.util.Collection;
 
 public class NetworkCoordinator implements Runnable, NetworkCoordinatorUserManager_IF, NetworkCoordinatorFileManager_IF {
@@ -13,6 +14,7 @@ public class NetworkCoordinator implements Runnable, NetworkCoordinatorUserManag
 	private static final int P2P_PORT = 5001;
 	UserManagerCoordinator_IF usermanager;
 	FileManagerCoordinator_IF filemanager;
+	GUINetworkCoordinator_IF gui;
 	
 	private enum MESSAGE_TYPE {
 		// BCASTS
@@ -61,7 +63,7 @@ public class NetworkCoordinator implements Runnable, NetworkCoordinatorUserManag
 	}
 	
 	// UserManager BCASTS
-	public void addUserBcast (String username) {
+	public void addUserBcast(String username) {
 		byte[] message = username.getBytes();
 		byte message_type = MESSAGE_TYPE.ADD_USER_BCAST.toByte();
 		sendBcastMsg(message_type, message.length, message);
@@ -156,10 +158,15 @@ public class NetworkCoordinator implements Runnable, NetworkCoordinatorUserManag
 		if (message_type == MESSAGE_TYPE.ADD_USER_BCAST.toByte()) {
 			usermanager.addNetworkUser(message.toString(), IP);
 			// TODO: Send owned file to message.toString()
+			ArrayList<String> ownedFiles = (ArrayList<String>) filemanager.getOwnFiles();
+			for (String ownedFile : ownedFiles) {
+				addFileSingle(ownedFile, message.toString());
+			}
 		} 
 		else if (message_type == MESSAGE_TYPE.REMOVE_USER_BCAST.toByte()) {
 			usermanager.removeNetworkUser(message.toString(), IP);
 			// TODO: Remove user's files from file ledger
+			filemanager.removeAllNetworkFile(message.toString());
 		} 
 		else if (message_type == MESSAGE_TYPE.ADD_FILE_BCAST.toByte()) {
 			filemanager.addNetworkFile(message.toString(), usermanager.getNetworkUserName(IP));
@@ -172,12 +179,17 @@ public class NetworkCoordinator implements Runnable, NetworkCoordinatorUserManag
 		} 
 		else if (message_type == MESSAGE_TYPE.JOIN_GROUP.toByte()) {
 			// TODO: Check if username is taken
-			addUserBcast(message.toString());
-			// TODO: Send N addUserSingle()
-			// What is correct order
+			if (usermanager.isUsernameTaken(message.toString())) {
+				usernameTaken(message.toString(), IP);
+			}
+			else {
+				addUserBcast(message.toString());
+				// TODO: Send N addUserSingle()
+			}
 		} 
 		else if (message_type == MESSAGE_TYPE.USERNAME_TAKEN.toByte()) {
 			// TODO: Notify UserManager that username is taken 
+			gui.connectionStatus(true, false);
 		} 
 		else if (message_type == MESSAGE_TYPE.ADD_USER_SINGLE.toByte()) {
 			usermanager.addNetworkUser(message.toString(), usermanager.getNetworkUserName(IP));
