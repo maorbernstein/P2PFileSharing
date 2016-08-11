@@ -15,6 +15,7 @@ public class UserManager implements UserManagerGUI_IF, UserManagerCoordinator_IF
 	private Map<String, String> user_ledger; // mapping from username to ip
 	private FileManagerUserManager_IF filemanager;
 	private NetworkCoordinatorUserManager_IF net_coordinator;
+	private GUIUserManager_IF gui;
 	
 	static public String getMyIP(){
 	    try {
@@ -43,6 +44,10 @@ public class UserManager implements UserManagerGUI_IF, UserManagerCoordinator_IF
 		return user_ledger.values();
 	}
 	
+	public Set<String> getAllUsernames(){
+		return user_ledger.keySet();
+	}
+	
 	public boolean addNetworkUser(String username, String IP) {
 		if(user_ledger.containsKey(username) || (username == own_user_name) ){
 			// Notify Coordinator that user name already exists
@@ -50,7 +55,7 @@ public class UserManager implements UserManagerGUI_IF, UserManagerCoordinator_IF
 		}
 		user_ledger.put(username, IP);
 		filemanager.addUser(username);
-		// GUI: Notify that new user has been added
+		gui.addUser(username);
 		return true;
 	}
 	
@@ -62,7 +67,7 @@ public class UserManager implements UserManagerGUI_IF, UserManagerCoordinator_IF
 		} else{
 			user_ledger.remove(username);
 			filemanager.addUser(username);
-			// GUI: Notify that user has been removed
+			gui.removeUser(username);
 		}
 	}
 	

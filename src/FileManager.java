@@ -221,93 +221,88 @@ public class FileManager implements FileManagerGUI_IF, FileManagerCoordinator_IF
 	@Override
 	public void removeAllNetworkFile(String username) {
 		// TODO Auto-generated method stub
-		
+		file_ledger.remove(username);
 	}
 		
-		
-		public void updateNetworkFile(String filename,String username){
-			if(!file_ledger.containsKey(username)){
-				// Coordinator: Notify that username does not exist
+	@Override
+	public void updateNetworkFile(String filename,String username){
+		if(!file_ledger.containsKey(username)){
+			// TODO: Coordinator: Notify that username does not exist
+		} else {
+			ArrayList<String> file_list = file_ledger.get(username);
+			if(file_list.contains(filename)){
+				//TODO: GUI: Notify that file from user username has been updated
 			} else {
-				ArrayList<String> file_list = file_ledger.get(username);
-				if(file_list.contains(filename)){
-					// GUI: Notify that file from user username has been updated
-				} else {
-					// Coordinator: Notify file name filename does not exist to user username
-					addNetworkFile(filename, username);
-				}
+				// TODO:Coordinator: Notify file name filename does not exist to user username
+				addNetworkFile(filename, username);
 			}
 		}
+	}
+	
+	public void removeNetworkFile(String filename, String username){
 		
-		 // public void removeNetworkFile(String filename, String username);
-		
-		public void removeNetworkFile(String filename, String username){
-			
-			 if(!file_ledger.containsKey(username)){
-				// GUI: Notify user not found in file_ledger
+		if(!file_ledger.containsKey(username)){
+			//TODO: GUI: Notify user not found in file_ledger
+			return;
+		}else{
+			ArrayList<String> file_list = file_ledger.get(username);
+			if(!file_list.contains(filename)){
+				//TODO: GUI: Notify file not found in ledger	
 				return;
-			}else{
-				ArrayList<String> file_list = file_ledger.get(username);
-				if(!file_list.contains(filename)){
-					// GUI: Notify file not found in ledger	
-					return;
-				}
-				file_list.remove(filename);
-			// GUI: Notify file successfully removed
+			}
+			file_list.remove(filename);
+		//TODO: GUI: Notify file successfully removed
 		}
-}
+	}
 		
 	// network read 
 		
-		public void readNetworkFileInit(String username, String filename) {
-			if(!golden_chest.contains(filename)){
-			 // NetworkCoordinator: Notify user name requested not found (NC - Filemanager Username Mismatch)
-			}
-			else {
-				try {
-					FileInputStream in = new FileInputStream(GOLDEN_CHEST_DIRECTORY + filename);
-					pending_sending_files.put(new Pair<String, String>(username, filename), in);
-					// 
-				} catch (FileNotFoundException e){
-					// NetworkCoordinator: Notify filename requested not found
-				} catch (SecurityException e){
-					// NetworkCoordinator: File already open which throws a security exception
-				}
+	public void readNetworkFileInit(String username, String filename) {
+		if(!golden_chest.contains(filename)){
+		 // TODO:NetworkCoordinator: Notify user name requested not found (NC - Filemanager Username Mismatch)
+		}
+		else {
+			try {
+				FileInputStream in = new FileInputStream(GOLDEN_CHEST_DIRECTORY + filename);
+				pending_sending_files.put(new Pair<String, String>(username, filename), in);
+			} catch (FileNotFoundException e){
+				// TODO:NetworkCoordinator: Notify filename requested not found
+			} catch (SecurityException e){
+				// TODO:NetworkCoordinator: File already open which throws a security exception
 			}
 		}
+	}
 		
 	
-    public int readNetworkFileChunk(String username, String filename,byte[] bytes){
-			Pair<String,String> p = new Pair<String, String>(username, filename);
-			FileInputStream in = pending_sending_files.get(p);
-			if(in == null){
-				//  readNetworkFileChunk was not called properly
-			} else {
-				try {
-					  return in.read(bytes);
-					
-				} catch(IOException e){
-					// Network Coordinator: IO Exception occurred.
-				}
-			}
-			return 0;
-		}
-		
-		public void readNetworkFileDone(String username, String filename){
-			Pair<String, String> p = new Pair<String, String>(username, filename);
-			FileInputStream in = pending_sending_files.get(p);
-			if(in == null){
-				// Network Coordinator: writeNetworkFileInit was not called properly
-			} else {
-				try {
-					in.close();
-					pending_sending_files.remove(p);
-				} catch(IOException e){
-					// Network Coordinator: IO Exception occurred.
-				}
+	public int readNetworkFileChunk(String username, String filename,byte[] bytes){
+		Pair<String,String> p = new Pair<String, String>(username, filename);
+		FileInputStream in = pending_sending_files.get(p);
+		if(in == null){
+			//  readNetworkFileChunk was not called properly
+		} else {
+			try {
+				  return in.read(bytes);
+				
+			} catch(IOException e){
+				//TODO: Network Coordinator: IO Exception occurred.
 			}
 		}
+		return 0;
+	}
 		
-		
+	public void readNetworkFileDone(String username, String filename){
+		Pair<String, String> p = new Pair<String, String>(username, filename);
+		FileInputStream in = pending_sending_files.get(p);
+		if(in == null){
+			// TODO:Network Coordinator: writeNetworkFileInit was not called properly
+		} else {
+			try {
+				in.close();
+				pending_sending_files.remove(p);
+			} catch(IOException e){
+				// TODO:Network Coordinator: IO Exception occurred.
+			}
+		}
+	}			
 }
 		
