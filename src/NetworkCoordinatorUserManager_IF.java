@@ -10,4 +10,6 @@ public interface NetworkCoordinatorUserManager_IF {
 	public void usernameTaken(String username, String IP);
 	public void addUserSingle(String username, String IP);
 	public void addFileSingle(String filename, String IP);
+	
+	public void exit();
 }
