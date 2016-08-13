@@ -92,11 +92,12 @@ public class UserManager implements UserManagerGUI_IF, UserManagerCoordinator_IF
 		return "";
 	}
 	
-	public void joinGroup(File invitation, String username){
+	@Override
+	public void joinGroup(File invitation, String username) throws NoIPFoundException{
 		own_user_name = username;
 		String join_ip = filemanager.getIPFromInvitationFile(invitation);
 		if(join_ip == ""){
-			// Nofiy GUI that invitation file is invalid
+			throw new NoIPFoundException();
 		}
 		net_coordinator.joinGroup(username, join_ip);
 	}
@@ -105,10 +106,10 @@ public class UserManager implements UserManagerGUI_IF, UserManagerCoordinator_IF
 		own_user_name = username;
 	}
 	
-	public String generateInvitationFile(){
+	public String generateInvitationFile() throws NoIPFoundException{
 		String ip = getMyIP();
 		if(ip == ""){
-			// Nofiy GUI that my IP not found
+			throw new NoIPFoundException();
 		}
 		return filemanager.generateInvitationFile(ip);
 	}
@@ -119,5 +120,14 @@ public class UserManager implements UserManagerGUI_IF, UserManagerCoordinator_IF
 
 	public String getMyUsername() {
 		return own_user_name;
+	}
+
+	@Override
+	public boolean isUsernameTaken(String username) {
+		if(user_ledger.containsKey(username) || (username == own_user_name) ){
+			// Notify Coordinator that user name already exists
+			return false;
+		}
+		return true;
 	}
 }
