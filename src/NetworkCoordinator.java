@@ -1,3 +1,7 @@
+import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -7,6 +11,7 @@ import java.net.Socket;
 import java.net.SocketAddress;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Set;
 
 public class NetworkCoordinator implements Runnable, NetworkCoordinatorUserManager_IF, NetworkCoordinatorFileManager_IF {
 	private static final int FILE_CHUNK_SIZE = 1024;
@@ -15,6 +20,7 @@ public class NetworkCoordinator implements Runnable, NetworkCoordinatorUserManag
 	UserManagerCoordinator_IF usermanager;
 	FileManagerCoordinator_IF filemanager;
 	GUINetworkCoordinator_IF gui;
+	private boolean sendFileStarted = false;
 	
 	private enum MESSAGE_TYPE {
 		// BCASTS
@@ -100,6 +106,10 @@ public class NetworkCoordinator implements Runnable, NetworkCoordinatorUserManag
 		sendMsg(message_type, message.length, message, IP);
 	}
 	
+	public void exit() {
+		
+	}
+	
 	// FileManager BCASTS
 	public void addFileBcast(String filename) {
 		byte[] message = filename.getBytes();
@@ -126,8 +136,16 @@ public class NetworkCoordinator implements Runnable, NetworkCoordinatorUserManag
 		sendMsg(message_type, message.length, message, usermanager.getNetworkUserIP(username));
 	}
 	
-	public void sendFile() {
-		
+	private void sendFile(String username, String filename) {
+		byte[] message = new byte[FILE_CHUNK_SIZE];
+		byte message_type = MESSAGE_TYPE.SEND_FILE.toByte();
+		filemanager.readNetworkFileInit(username, filename);
+		int count;
+		count = filemanager.readNetworkFileChunk(username, filename, message);
+		while (count >= FILE_CHUNK_SIZE) {
+			sendMsg(message_type, count, message, usermanager.getNetworkUserIP(username));
+		}
+		filemanager.readNetworkFileDone(username, filename);
 	}
 	
 	// Receive Messages
@@ -157,7 +175,7 @@ public class NetworkCoordinator implements Runnable, NetworkCoordinatorUserManag
 	private void recvMsg(byte message_type, byte[] message, String IP) {
 		if (message_type == MESSAGE_TYPE.ADD_USER_BCAST.toByte()) {
 			usermanager.addNetworkUser(message.toString(), IP);
-			// TODO: Send owned file to message.toString()
+			// Send owned file to message.toString()
 			ArrayList<String> ownedFiles = (ArrayList<String>) filemanager.getOwnFiles();
 			for (String ownedFile : ownedFiles) {
 				addFileSingle(ownedFile, message.toString());
@@ -165,7 +183,7 @@ public class NetworkCoordinator implements Runnable, NetworkCoordinatorUserManag
 		} 
 		else if (message_type == MESSAGE_TYPE.REMOVE_USER_BCAST.toByte()) {
 			usermanager.removeNetworkUser(message.toString(), IP);
-			// TODO: Remove user's files from file ledger
+			// Remove user's files from file ledger
 			filemanager.removeAllNetworkFile(message.toString());
 		} 
 		else if (message_type == MESSAGE_TYPE.ADD_FILE_BCAST.toByte()) {
@@ -178,17 +196,20 @@ public class NetworkCoordinator implements Runnable, NetworkCoordinatorUserManag
 			filemanager.removeNetworkFile(message.toString(), usermanager.getNetworkUserName(IP));
 		} 
 		else if (message_type == MESSAGE_TYPE.JOIN_GROUP.toByte()) {
-			// TODO: Check if username is taken
+			// Check if username is taken
 			if (usermanager.isUsernameTaken(message.toString())) {
 				usernameTaken(message.toString(), IP);
 			}
 			else {
 				addUserBcast(message.toString());
-				// TODO: Send N addUserSingle()
+				// Send N addUserSingle()
+				Set<String> users = usermanager.getAllUsernames();
+				for (String user : users) {
+					addUserSingle(user, IP);
+				}
 			}
 		} 
 		else if (message_type == MESSAGE_TYPE.USERNAME_TAKEN.toByte()) {
-			// TODO: Notify UserManager that username is taken 
 			gui.connectionStatus(true, false);
 		} 
 		else if (message_type == MESSAGE_TYPE.ADD_USER_SINGLE.toByte()) {
@@ -198,10 +219,20 @@ public class NetworkCoordinator implements Runnable, NetworkCoordinatorUserManag
 			filemanager.addNetworkFile(message.toString(), usermanager.getNetworkUserName(IP));
 		} 
 		else if (message_type == MESSAGE_TYPE.GET_FILE.toByte()) {
-			// TODO: Send file
+			sendFile(message.toString(), IP);
 		}
 		else if (message_type == MESSAGE_TYPE.SEND_FILE.toByte()) {
-			// TODO: Write to file
+			// TODO: How to get filename?
+			if (!sendFileStarted) {
+				//filemanager.writeNetworkFileInit(usermanager.getNetworkUserName(IP), filename);
+				sendFileStarted = true;
+			}
+			else if(sendFileStarted && message.length < FILE_CHUNK_SIZE) {
+				//filemanager.writeNetworkFileChunk(usermanager.getNetworkUserName(IP), filename, message));
+			}
+			else {
+				//filemanager.writeNetworkFileDone(usermanager.getNetworkUserName(IP), filename);
+			}
 		}
 		else {
 			throw new IllegalArgumentException("Invalid Message Type");
