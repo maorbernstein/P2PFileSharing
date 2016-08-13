@@ -23,6 +23,23 @@ public class FileManager implements FileManagerGUI_IF, FileManagerCoordinator_IF
 	NetworkCoordinatorFileManager_IF netcoordinator;
 	GUIFileManager_IF gui;
 	
+	private void showState(){
+		System.out.print("Golden Chest = {");
+		for(String s: golden_chest){
+			System.out.print(s + ", ");
+		}
+		System.out.println(" }");
+		System.out.println("File ledger = {");
+		for(Entry<String, ArrayList<String>> e: file_ledger.entrySet() ){
+			System.out.print(e.getKey() + ":{");
+			for(String s: e.getValue()){
+				System.out.print(s + ", ");
+			}
+			System.out.println("}");
+		}
+		System.out.println(" }");
+	}
+	
 	FileManager(P2PFSGui gui_in){
 		gui = gui_in;
 		golden_chest = new ArrayList<String>();
@@ -83,6 +100,7 @@ public class FileManager implements FileManagerGUI_IF, FileManagerCoordinator_IF
 			// TODO: UserManager: Notify username already exists in file ledger (should never happen)
 		}
 		file_ledger.put(username, new ArrayList<String>());
+		showState();
 	}
 	
 	public void removeUser(String username){
@@ -90,6 +108,7 @@ public class FileManager implements FileManagerGUI_IF, FileManagerCoordinator_IF
 			// TODO: UserManager: Notify username is not in file ledger (should never happen)
 		}
 		file_ledger.remove(username);
+		showState();
 	}
 	
 	public void addNetworkFile(String filename, String username){
@@ -104,6 +123,7 @@ public class FileManager implements FileManagerGUI_IF, FileManagerCoordinator_IF
 				file_list.add(filename);
 			}
 		}
+		showState();
 	}
 	
 	public void writeNetworkFileInit(String username, String filename) {
@@ -125,6 +145,7 @@ public class FileManager implements FileManagerGUI_IF, FileManagerCoordinator_IF
 				// TODO: NetworkCoordinator: File already open which throws a security exception
 			}
 		}
+		showState();
 	}
 	
 	public void writeNetworkFileChunk(String username, String filename, byte[] bytes){
@@ -140,6 +161,7 @@ public class FileManager implements FileManagerGUI_IF, FileManagerCoordinator_IF
 				// TODO: Network Coordinator: IO Exception occurred.
 			}
 		}
+		showState();
 	}
 	
 	public void writeNetworkFileDone(String username, String filename){
@@ -154,6 +176,7 @@ public class FileManager implements FileManagerGUI_IF, FileManagerCoordinator_IF
 				// TODO Network Coordinator: IO Exception occurred.
 			}
 		}
+		showState();
 	}
 	
 	public void addUserFile(File f) {
@@ -172,6 +195,7 @@ public class FileManager implements FileManagerGUI_IF, FileManagerCoordinator_IF
 		} catch(IOException e){
 			// TODO GUI: Notify IO Exception Occurred
 		}
+		showState();
 	}
 	
 	public void getUserFile(String filename, String username){
@@ -189,6 +213,7 @@ public class FileManager implements FileManagerGUI_IF, FileManagerCoordinator_IF
 		} else {
 			// TODO GUI: Notify file not found in the ledger (file does not exist)
 		}
+		showState();
 	}
 	
 	public void removeUserFile(String filename){
@@ -200,9 +225,11 @@ public class FileManager implements FileManagerGUI_IF, FileManagerCoordinator_IF
 		f.delete();
 		//dwei netcoordinator.removeFileBcast(filename);
 		// TODO GUI: Notify file successfully removed
+		showState();
 	}
 	
 	public void updateUserFile(File f){
+		showState();
 		if(golden_chest.contains(f.getName())){
 			for(Map.Entry<Pair<String, String>, FileInputStream> entry: pending_sending_files.entrySet()){
 				if(entry.getKey().second == f.getName()){
