@@ -3,10 +3,7 @@ import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
-import java.util.Collection;
-import java.util.Enumeration;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 //import java.net.Socket;
 
@@ -16,7 +13,13 @@ public class UserManager implements UserManagerGUI_IF, UserManagerCoordinator_IF
 	private FileManagerUserManager_IF filemanager;
 	private NetworkCoordinatorUserManager_IF net_coordinator;
 	private GUIUserManager_IF gui;
-	
+
+	UserManager(P2PFSGui guiRef)
+	{
+		filemanager = new FileManager(guiRef);
+		net_coordinator = new NetworkCoordinator();
+	}
+
 	static public String getMyIP(){
 	    try {
 	        Enumeration<NetworkInterface> interfaces = NetworkInterface.getNetworkInterfaces();
@@ -95,7 +98,14 @@ public class UserManager implements UserManagerGUI_IF, UserManagerCoordinator_IF
 	@Override
 	public void joinGroup(File invitation, String username) throws NoIPFoundException{
 		own_user_name = username;
-		String join_ip = filemanager.getIPFromInvitationFile(invitation);
+
+		String join_ip;
+		try {
+			join_ip = filemanager.getIPFromInvitationFile(invitation);
+		} catch (NoSuchElementException e){
+			throw new NoIPFoundException();
+		}
+
 		if(join_ip == ""){
 			throw new NoIPFoundException();
 		}

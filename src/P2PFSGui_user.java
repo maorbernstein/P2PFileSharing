@@ -154,7 +154,7 @@ class P2PFSGui_user
 
                 filelist.add(newFile);
 
-                //guiElem.getFm().addUserFile(file);
+                guiElem.getFm().addUserFile(file);
 
                 guiElem.redraw();
             });

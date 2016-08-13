@@ -5,14 +5,8 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.nio.file.Files;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Scanner;
-import java.util.Set;
 
 import utilities.Pair;
 
@@ -39,6 +33,8 @@ public class FileManager implements FileManagerGUI_IF, FileManagerCoordinator_IF
 		golden_chest_dir.mkdirs();
 		File public_dir = new File(PUBLIC_DIRECTORY);
 		public_dir.mkdirs();
+
+		netcoordinator = new NetworkCoordinator();
 	}
 	
 	private static void copyFiles(File in_file, String outdir) throws FileNotFoundException, IOException{
@@ -64,6 +60,9 @@ public class FileManager implements FileManagerGUI_IF, FileManagerCoordinator_IF
 			}
 		} catch(FileNotFoundException e){
 			// TODO: Should never happen because of checking by the GUI
+		} catch (NoSuchElementException e1) {
+			System.out.println("File Manager: Invalid invitation file");
+			throw e1;
 		}
 		return "";
 	}
@@ -166,7 +165,7 @@ public class FileManager implements FileManagerGUI_IF, FileManagerCoordinator_IF
 		try {
 			copyFiles(f, GOLDEN_CHEST_DIRECTORY + f.getName());
 			golden_chest.add(f.getName());
-			netcoordinator.addFileBcast(f.getName());
+			//dwei netcoordinator.addFileBcast(f.getName());
 			// TODO GUI: Notify Success
 		} catch(FileNotFoundException e) {
 			// TODO GUI: Notify File not Found
@@ -185,7 +184,7 @@ public class FileManager implements FileManagerGUI_IF, FileManagerCoordinator_IF
 			if(pending_recving_files.containsKey(new Pair<String, String>(filename, username))){
 				// TODO GUI: Notify user that this file is already being downloaded 
 			} else {
-				netcoordinator.getFile(username, filename);
+				//dwei netcoordinator.getFile(username, filename);
 			}
 		} else {
 			// TODO GUI: Notify file not found in the ledger (file does not exist)
@@ -199,7 +198,7 @@ public class FileManager implements FileManagerGUI_IF, FileManagerCoordinator_IF
 		}
 		File f = new File(GOLDEN_CHEST_DIRECTORY + filename);
 		f.delete();
-		netcoordinator.removeFileBcast(filename);
+		//dwei netcoordinator.removeFileBcast(filename);
 		// TODO GUI: Notify file successfully removed
 	}
 	
@@ -212,7 +211,7 @@ public class FileManager implements FileManagerGUI_IF, FileManagerCoordinator_IF
 			}
 			try {
 				copyFiles(f, GOLDEN_CHEST_DIRECTORY + f.getName());
-				netcoordinator.updateFileBcast(f.getName());
+				//dwei netcoordinator.updateFileBcast(f.getName());
 				// TODO GUI: Notify successful file update
 			} catch (FileNotFoundException e) {
 				// TODO GUI: File not found
