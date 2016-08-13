@@ -18,6 +18,8 @@ public class UserManager implements UserManagerGUI_IF, UserManagerCoordinator_IF
 	UserManager(P2PFSGui guiRef)
 	{
 		gui = guiRef;
+		own_user_name = "";
+		user_ledger = new HashMap<String, String>();
 		filemanager = new FileManager(guiRef);
 		net_coordinator = new NetworkCoordinator();
 	}
