@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.nio.file.Files;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -28,7 +29,12 @@ public class FileManager implements FileManagerGUI_IF, FileManagerCoordinator_IF
 	NetworkCoordinatorFileManager_IF netcoordinator;
 	GUIFileManager_IF gui;
 	
-	FileManager(){
+	FileManager(P2PFSGui gui_in){
+		gui = gui_in;
+		golden_chest = new ArrayList<String>();
+		file_ledger = new HashMap<String, ArrayList<String>>();
+		pending_sending_files = new HashMap<Pair<String, String>, FileInputStream>();
+		pending_recving_files = new HashMap<Pair<String, String>, FileOutputStream>();
 		File golden_chest_dir = new File(GOLDEN_CHEST_DIRECTORY);
 		golden_chest_dir.mkdirs();
 		File public_dir = new File(PUBLIC_DIRECTORY);
