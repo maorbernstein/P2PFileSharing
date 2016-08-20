@@ -24,9 +24,6 @@ import javafx.stage.Stage;
  ****************************************************************************************/
 class P2PFSGui_notification
 {
-    private static P2PFSGui_elements guiElems = new P2PFSGui_elements(new Stage());
-
-    //private static final Image loadingImg = new Image("/resources/loading.gif");
     private static final Image notifyImg = new Image("/resources/notify.png");
     private static final Image errorImg = new Image("/resources/error.png");
 
@@ -68,7 +65,7 @@ class P2PFSGui_notification
 
         // Create scene
 
-        Scene notifyScene = new Scene(notifyGrid, guiElems.POPUP_WINDOW_WIDTH, guiElems.POPUP_WINDOW_HEIGHT);
+        Scene notifyScene = new Scene(notifyGrid, P2PFSGui_elements.POPUP_WINDOW_WIDTH, P2PFSGui_elements.POPUP_WINDOW_HEIGHT);
 
         // Create stage
         Stage notifyStage = new Stage();
@@ -117,7 +114,7 @@ class P2PFSGui_notification
         loadingGrid.add(pBarFormat, 0, 1);
 
         // Create scene
-        Scene loadingScene = new Scene(loadingGrid, guiElems.POPUP_WINDOW_WIDTH, guiElems.POPUP_WINDOW_HEIGHT);
+        Scene loadingScene = new Scene(loadingGrid, P2PFSGui_elements.POPUP_WINDOW_WIDTH, P2PFSGui_elements.POPUP_WINDOW_HEIGHT);
 
         // Create stage
         loadingStage = new Stage();

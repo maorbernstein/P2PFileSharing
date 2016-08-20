@@ -70,7 +70,7 @@ public class P2PFSGui extends Application implements
         unameOk = false;
 
         // Send GUI Stage element to guiElems
-        guiElems = new P2PFSGui_elements(mainStage);
+        guiElems = new P2PFSGui_elements(mainStage, this);
 
         createStartUpScene();
     }
@@ -100,49 +100,54 @@ public class P2PFSGui extends Application implements
             FileChooser invFileChooser = new FileChooser();
             invFileChooser.setTitle("Select Invitation File");
             File file = invFileChooser.showOpenDialog(startUpStage);
-            System.out.println("Opening file: " + file.getName());
 
-            // Check for valid username
-            if(checkUsername())
+            try
             {
-                System.out.println("Username verified");
-                System.out.println("Username: " + username);
+                System.out.println("Opening file: " + file.getName());
 
-                /*try
+                // Check for valid username
+                if (checkUsername())
                 {
-                    guiElems.getUm().joinGroup(file, username);
-                } catch (NoIPFoundException e1)
-                {
-                    notify.createError("Invalid Invitation file");
-                }
-                */
+                    System.out.println("Username verified");
+                    System.out.println("Username: " + username);
 
-                timeout = new PauseTransition(Duration.seconds(guiElems.GUI_TIMEOUT_SEC));
-
-                P2PFSGui_notification.createLoadingPopup();
-                timeout.setOnFinished(event ->
-                {
-                    if (connection && unameOk)
+                    try
                     {
-                        System.out.println("Network joined successfully");
+                        guiElems.getUm().joinGroup(file, username);
 
-                        createMainStage();
+                        timeout = new PauseTransition(Duration.seconds(guiElems.GUI_TIMEOUT_SEC));
 
-                        P2PFSGui_user me = new P2PFSGui_user(username, guiElems, true);
-                        guiElems.setMe(me);
-                        guiElems.redraw();
+                        P2PFSGui_notification.createLoadingPopup();
+                        timeout.setOnFinished(event ->
+                        {
+                            if (connection && unameOk)
+                            {
+                                System.out.println("Network joined successfully");
 
-                        guiElems.getStage().show();
-                        startUpStage.close();
-                    } else
+                                createMainStage();
+
+                                P2PFSGui_user me = new P2PFSGui_user(username, guiElems, true);
+                                guiElems.setMe(me);
+                                guiElems.redraw();
+
+                                guiElems.getStage().show();
+                                startUpStage.close();
+                            } else
+                            {
+                                System.out.println("Failed to join network");
+                                notify.createError("Failed to join network");
+                            }
+                        });
+
+                        timeout.play();
+                    } catch (NoIPFoundException e1)
                     {
-                        System.out.println("Failed to join network");
-                        notify.createError("Failed to join network");
+                        notify.createError("Invalid Invitation file");
                     }
-                });
 
-                timeout.play();
-            }
+                }
+            } catch (NullPointerException e4)
+            {}
         });
 
         createNetworkBtn.setOnAction((ActionEvent e) -> {
@@ -156,38 +161,18 @@ public class P2PFSGui extends Application implements
                 System.out.println("Username verified");
                 System.out.println("Username: " + username);
 
-                //try
-                //{
-                //    guiElems.getUm().createGroup(username);
+                guiElems.getUm().createGroup(username);
 
-                        timeout = new PauseTransition(Duration.seconds(guiElems.GUI_TIMEOUT_SEC));
+                createMainStage();
 
-                        P2PFSGui_notification.createLoadingPopup();
+                // Set current user as main user.
+                P2PFSGui_user me = new P2PFSGui_user(username, guiElems, true);
+                guiElems.setMe(me);
+                guiElems.redraw();
 
-                        timeout.setOnFinished(event ->
-                        {
-                            if(connection && unameOk)
-                            {
-                                createMainStage();
+                guiElems.getStage().show();
 
-                                // Set current user as main user.
-                                P2PFSGui_user me = new P2PFSGui_user(username, guiElems, true);
-                                guiElems.setMe(me);
-                                guiElems.redraw();
-
-                                guiElems.getStage().show();
-
-                                startUpStage.close();
-                            }
-                        });
-
-                        timeout.play();
-                //}
-                //catch (NoIPFoundException e3)
-                //{
-                //    notify.createError("Failed to Create Network");
-                //    System.out.println("Failed to Create Network");
-                //}
+                startUpStage.close();
             }
         });
 
@@ -229,20 +214,20 @@ public class P2PFSGui extends Application implements
         final Button inviteBtn = new Button("Invite");
         inviteBtn.setOnAction( (ActionEvent e) -> {
 
-            //try
-            //{
+            try
+            {
                 String directory  = new String ("Directory");
-            //    directory = guiElems.getUm().generateInvitationFile();
+                directory = guiElems.getUm().generateInvitationFile();
 
                 notify.createNotification("Invitation file Generated at \n" + directory,
                         "Invitation File Generated");
                 System.out.println("Generated Invitation File");
-            //}
-            //catch (NoIPFoundException e1)
-            // {
-             //   notify.createError("Failed to generate Invitation File");
-             //   System.out.println("Failed to generate Invitation File");
-            //}
+            }
+            catch (NoIPFoundException e1)
+            {
+                notify.createError("Failed to generate Invitation File");
+                System.out.println("Failed to generate Invitation File");
+            }
         });
 
         // Create ScrollPane to contain all elements and add scroll bar

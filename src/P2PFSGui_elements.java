@@ -29,7 +29,7 @@ class P2PFSGui_elements
     private Stage stage;
 
     private FileManager fm;
-    //private UserManager um;
+    private UserManager um;
 
     // Define Array lists for 3 types of lists
     // -- List of users who are local user (Only one user)
@@ -39,15 +39,15 @@ class P2PFSGui_elements
     // -- List of users who are downloading from us
     private ArrayList<P2PFSGui_user> uploadingList;
 
-    final int MAX_WINDOW_HEIGHT = 500;
-    final int MAX_WINDOW_WIDTH = 510;
+    final static int MAX_WINDOW_HEIGHT = 500;
+    final static int MAX_WINDOW_WIDTH = 510;
 
-    final int POPUP_WINDOW_HEIGHT = 150;
-    final int POPUP_WINDOW_WIDTH = 300;
+    final static int POPUP_WINDOW_HEIGHT = 150;
+    final static int POPUP_WINDOW_WIDTH = 300;
 
-    final int GUI_TIMEOUT_SEC = 60;
+    final static int GUI_TIMEOUT_SEC = 60;
 
-    P2PFSGui_elements(Stage s)
+    P2PFSGui_elements(Stage s, P2PFSGui gui)
     {
         stage = s;
 
@@ -55,8 +55,8 @@ class P2PFSGui_elements
         userList = new ArrayList<P2PFSGui_user>();
         uploadingList = new ArrayList<P2PFSGui_user>();
 
-        //fm = new FileManager();
-        //um = new UserManager();
+        fm = new FileManager(gui);
+        um = new UserManager(gui);
     }
 
     Scene getScene()
@@ -74,12 +74,12 @@ class P2PFSGui_elements
         return stage;
     }
 
-    /*
+
     UserManager getUm()
     {
         return um;
     }
-    */
+
 
     FileManager getFm()
     {
@@ -298,7 +298,7 @@ class P2PFSGui_elements
     boolean closeGui()
     {
 
-        //TODO: Add removeUser command here
+        um.close();
 
         System.out.println("Number of Users Downloading Items = " + uploadingList.size());
 

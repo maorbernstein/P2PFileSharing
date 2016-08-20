@@ -177,7 +177,7 @@ class P2PFSGui_file
                 if(updatedFile.getName().equals(filename))
                 {
                     System.out.println("Updated file: " + updatedFile.getName());
-                    //guiElem.getFm().updateUserFile(updatedFile);
+                    guiElem.getFm().updateUserFile(updatedFile);
                 }
                 else
                 {
@@ -187,7 +187,7 @@ class P2PFSGui_file
 
             removeBtn.setOnAction( (ActionEvent e) -> {
                 guiElem.getMe().removeFile(filename);
-                //guiElem.getFm().removeUserFile(filename);
+                guiElem.getFm().removeUserFile(filename);
 
                 guiElem.redraw();
             });
@@ -217,7 +217,7 @@ class P2PFSGui_file
                 hb.getChildren().add(getBtn);
 
                 getBtn.setOnAction( (ActionEvent e) -> {
-                    //guiElem.getFm().getUserFile(filename, username);
+                    guiElem.getFm().getUserFile(filename, username);
 
                     setStatus(FileStatus.downloadingFile);
 

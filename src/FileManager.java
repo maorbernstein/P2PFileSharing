@@ -5,11 +5,8 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.nio.file.Files;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Scanner;
+import java.util.*;
+import java.util.Map.Entry;
 
 import utilities.Pair;
 
@@ -23,11 +20,38 @@ public class FileManager implements FileManagerGUI_IF, FileManagerCoordinator_IF
 	private Map<Pair<String, String>, FileInputStream>     pending_sending_files; // each entry is <username, filename>, fileinputstream
 	private Map<Pair<String, String>, FileOutputStream>    pending_recving_files; // each entry is <username, filename>, fileoutputstream
 	
-	FileManager(){
+	NetworkCoordinatorFileManager_IF netcoordinator;
+	GUIFileManager_IF gui;
+	
+	private void showState(){
+		System.out.print("Golden Chest = {");
+		for(String s: golden_chest){
+			System.out.print(s + ", ");
+		}
+		System.out.println(" }");
+		System.out.println("File ledger = {");
+		for(Entry<String, ArrayList<String>> e: file_ledger.entrySet() ){
+			System.out.print(e.getKey() + ":{");
+			for(String s: e.getValue()){
+				System.out.print(s + ", ");
+			}
+			System.out.println("}");
+		}
+		System.out.println(" }");
+	}
+	
+	FileManager(P2PFSGui gui_in){
+		gui = gui_in;
+		golden_chest = new ArrayList<String>();
+		file_ledger = new HashMap<String, ArrayList<String>>();
+		pending_sending_files = new HashMap<Pair<String, String>, FileInputStream>();
+		pending_recving_files = new HashMap<Pair<String, String>, FileOutputStream>();
 		File golden_chest_dir = new File(GOLDEN_CHEST_DIRECTORY);
 		golden_chest_dir.mkdirs();
 		File public_dir = new File(PUBLIC_DIRECTORY);
 		public_dir.mkdirs();
+
+		netcoordinator = new NetworkCoordinator();
 	}
 	
 	private static void copyFiles(File in_file, String outdir) throws FileNotFoundException, IOException{
@@ -53,6 +77,9 @@ public class FileManager implements FileManagerGUI_IF, FileManagerCoordinator_IF
 			}
 		} catch(FileNotFoundException e){
 			// TODO: Should never happen because of checking by the GUI
+		} catch (NoSuchElementException e1) {
+			System.out.println("File Manager: Invalid invitation file");
+			throw e1;
 		}
 		return "";
 	}
@@ -73,6 +100,7 @@ public class FileManager implements FileManagerGUI_IF, FileManagerCoordinator_IF
 			// TODO: UserManager: Notify username already exists in file ledger (should never happen)
 		}
 		file_ledger.put(username, new ArrayList<String>());
+		showState();
 	}
 	
 	public void removeUser(String username){
@@ -80,6 +108,7 @@ public class FileManager implements FileManagerGUI_IF, FileManagerCoordinator_IF
 			// TODO: UserManager: Notify username is not in file ledger (should never happen)
 		}
 		file_ledger.remove(username);
+		showState();
 	}
 	
 	public void addNetworkFile(String filename, String username){
@@ -94,6 +123,7 @@ public class FileManager implements FileManagerGUI_IF, FileManagerCoordinator_IF
 				file_list.add(filename);
 			}
 		}
+		showState();
 	}
 	
 	public void writeNetworkFileInit(String username, String filename) {
@@ -115,6 +145,7 @@ public class FileManager implements FileManagerGUI_IF, FileManagerCoordinator_IF
 				// TODO: NetworkCoordinator: File already open which throws a security exception
 			}
 		}
+		showState();
 	}
 	
 	public void writeNetworkFileChunk(String username, String filename, byte[] bytes){
@@ -130,6 +161,7 @@ public class FileManager implements FileManagerGUI_IF, FileManagerCoordinator_IF
 				// TODO: Network Coordinator: IO Exception occurred.
 			}
 		}
+		showState();
 	}
 	
 	public void writeNetworkFileDone(String username, String filename){
@@ -144,6 +176,7 @@ public class FileManager implements FileManagerGUI_IF, FileManagerCoordinator_IF
 				// TODO Network Coordinator: IO Exception occurred.
 			}
 		}
+		showState();
 	}
 	
 	public void addUserFile(File f) {
@@ -155,13 +188,14 @@ public class FileManager implements FileManagerGUI_IF, FileManagerCoordinator_IF
 		try {
 			copyFiles(f, GOLDEN_CHEST_DIRECTORY + f.getName());
 			golden_chest.add(f.getName());
-			// TODO NetworkCoordinator: Send a BCAST message addFile
+			//dwei netcoordinator.addFileBcast(f.getName());
 			// TODO GUI: Notify Success
 		} catch(FileNotFoundException e) {
 			// TODO GUI: Notify File not Found
 		} catch(IOException e){
 			// TODO GUI: Notify IO Exception Occurred
 		}
+		showState();
 	}
 	
 	public void getUserFile(String filename, String username){
@@ -174,11 +208,12 @@ public class FileManager implements FileManagerGUI_IF, FileManagerCoordinator_IF
 			if(pending_recving_files.containsKey(new Pair<String, String>(filename, username))){
 				// TODO GUI: Notify user that this file is already being downloaded 
 			} else {
-				// TODO NetworkCoordinator: Send a getFile Message to username
+				//dwei netcoordinator.getFile(username, filename);
 			}
 		} else {
 			// TODO GUI: Notify file not found in the ledger (file does not exist)
 		}
+		showState();
 	}
 	
 	public void removeUserFile(String filename){
@@ -188,11 +223,13 @@ public class FileManager implements FileManagerGUI_IF, FileManagerCoordinator_IF
 		}
 		File f = new File(GOLDEN_CHEST_DIRECTORY + filename);
 		f.delete();
-		// TODO NetworkCoordinator: Send a BCAST removeFile Message
+		//dwei netcoordinator.removeFileBcast(filename);
 		// TODO GUI: Notify file successfully removed
+		showState();
 	}
 	
 	public void updateUserFile(File f){
+		showState();
 		if(golden_chest.contains(f.getName())){
 			for(Map.Entry<Pair<String, String>, FileInputStream> entry: pending_sending_files.entrySet()){
 				if(entry.getKey().second == f.getName()){
@@ -201,7 +238,7 @@ public class FileManager implements FileManagerGUI_IF, FileManagerCoordinator_IF
 			}
 			try {
 				copyFiles(f, GOLDEN_CHEST_DIRECTORY + f.getName());
-				// TODO NetworkCoordinator: Send a BCAST updateFile Message
+				//dwei netcoordinator.updateFileBcast(f.getName());
 				// TODO GUI: Notify successful file update
 			} catch (FileNotFoundException e) {
 				// TODO GUI: File not found
@@ -212,7 +249,12 @@ public class FileManager implements FileManagerGUI_IF, FileManagerCoordinator_IF
 		}
 		// TODO GUI: File not found in golden chest, call add file
 	}
-
+	
+	@Override
+	public Set<Entry<String, ArrayList<String>>> getLedger() {
+		return file_ledger.entrySet();
+	}
+	
 	@Override
 	public Iterator<String> getOwnFiles() {
 		return golden_chest.iterator();
@@ -220,7 +262,6 @@ public class FileManager implements FileManagerGUI_IF, FileManagerCoordinator_IF
 
 	@Override
 	public void removeAllNetworkFile(String username) {
-		// TODO Auto-generated method stub
 		file_ledger.remove(username);
 	}
 		
@@ -231,9 +272,9 @@ public class FileManager implements FileManagerGUI_IF, FileManagerCoordinator_IF
 		} else {
 			ArrayList<String> file_list = file_ledger.get(username);
 			if(file_list.contains(filename)){
-				//TODO: GUI: Notify that file from user username has been updated
+				gui.updateFile(username, filename);
 			} else {
-				// TODO:Coordinator: Notify file name filename does not exist to user username
+				// TODO: Coordinator: Notify file name filename does not exist to user username
 				addNetworkFile(filename, username);
 			}
 		}
@@ -251,7 +292,7 @@ public class FileManager implements FileManagerGUI_IF, FileManagerCoordinator_IF
 				return;
 			}
 			file_list.remove(filename);
-		//TODO: GUI: Notify file successfully removed
+			gui.removeFile(username, filename);
 		}
 	}
 		
