@@ -13,7 +13,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Set;
 
-public class NetworkCoordinator implements Runnable, NetworkCoordinatorUserManager_IF, NetworkCoordinatorFileManager_IF {
+public class NetworkCoordinator extends Thread implements NetworkCoordinatorUserManager_IF, NetworkCoordinatorFileManager_IF {
 	private static final int FILE_CHUNK_SIZE = 1024;
 	private static final int HDR_LENGTH = 3;
 	private static final int P2P_PORT = 5001;

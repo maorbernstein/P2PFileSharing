@@ -52,6 +52,7 @@ public class FileManager implements FileManagerGUI_IF, FileManagerCoordinator_IF
 		public_dir.mkdirs();
 
 		netcoordinator = new NetworkCoordinator();
+		netcoordinator.start();
 	}
 	
 	private static void copyFiles(File in_file, String outdir) throws FileNotFoundException, IOException{

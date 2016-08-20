@@ -8,4 +8,6 @@ public interface NetworkCoordinatorFileManager_IF {
 
 	// Get File
 	public void getFile(String username, String filename);
+	
+	public void start();
 }
