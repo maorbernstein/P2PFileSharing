@@ -28,8 +28,8 @@ class P2PFSGui_elements
     private Scene scene;
     private Stage stage;
 
-    private FileManager fm;
-    private UserManager um;
+    private FileManagerGUI_IF fm;
+    private UserManagerGUI_IF um;
 
     // Define Array lists for 3 types of lists
     // -- List of users who are local user (Only one user)
@@ -55,8 +55,23 @@ class P2PFSGui_elements
         userList = new ArrayList<P2PFSGui_user>();
         uploadingList = new ArrayList<P2PFSGui_user>();
 
-        fm = new FileManager(gui);
-        um = new UserManager(gui);
+        FileManager f = new FileManager();
+        UserManager u = new UserManager();
+        NetworkCoordinator n = new NetworkCoordinator();
+
+        f.linkGui(gui);
+        f.linkNC(n);
+
+        u.linkGui(gui);
+        u.linkNC(n);
+        u.linkFM(f);
+
+        n.linkGui(gui);
+        n.linkFM(f);
+        n.linkUM(u);
+
+        fm = f;
+        um = u;
     }
 
     Scene getScene()
@@ -75,13 +90,13 @@ class P2PFSGui_elements
     }
 
 
-    UserManager getUm()
+    UserManagerGUI_IF getUm()
     {
         return um;
     }
 
 
-    FileManager getFm()
+    FileManagerGUI_IF getFm()
     {
         return fm;
     }

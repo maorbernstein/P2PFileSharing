@@ -150,13 +150,21 @@ class P2PFSGui_user
                 invFileChooser.setTitle("Select File to Add");
                 File file = invFileChooser.showOpenDialog(guiElem.getStage());
 
+
                 P2PFSGui_file newFile = new P2PFSGui_file(file.getName(), username, guiElem, isMe);
 
-                filelist.add(newFile);
+                if(filelist.contains(newFile))
+                {
+                    P2PFSGui_notification.createError("Duplicate File");
+                }
+                else
+                {
+                    filelist.add(newFile);
 
-                guiElem.getFm().addUserFile(file);
+                    guiElem.getFm().addUserFile(file);
 
-                guiElem.redraw();
+                    guiElem.redraw();
+                }
             });
 
             hb.getChildren().addAll(user, addBtn);

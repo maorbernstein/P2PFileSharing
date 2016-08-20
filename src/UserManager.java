@@ -15,14 +15,24 @@ public class UserManager implements UserManagerGUI_IF, UserManagerCoordinator_IF
 	private NetworkCoordinatorUserManager_IF net_coordinator;
 	private GUIUserManager_IF gui;
 
-	UserManager(P2PFSGui guiRef)
+	UserManager()
 	{
-		gui = guiRef;
 		own_user_name = "";
 		user_ledger = new HashMap<String, String>();
-		filemanager = new FileManager(guiRef);
-		net_coordinator = new NetworkCoordinator();
 	}
+
+	public void linkGui(P2PFSGui g) {
+		gui = g;
+	}
+
+	public void linkNC(NetworkCoordinator n) {
+		net_coordinator = n;
+	}
+
+	public void linkFM(FileManager f) {
+		filemanager = f;
+	}
+
 
 	private void showState(){
 		System.out.println("Own username = " + own_user_name);

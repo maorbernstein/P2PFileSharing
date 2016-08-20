@@ -40,8 +40,7 @@ public class FileManager implements FileManagerGUI_IF, FileManagerCoordinator_IF
 		System.out.println(" }");
 	}
 	
-	FileManager(P2PFSGui gui_in){
-		gui = gui_in;
+	FileManager(){
 		golden_chest = new ArrayList<String>();
 		file_ledger = new HashMap<String, ArrayList<String>>();
 		pending_sending_files = new HashMap<Pair<String, String>, FileInputStream>();
@@ -51,10 +50,18 @@ public class FileManager implements FileManagerGUI_IF, FileManagerCoordinator_IF
 		File public_dir = new File(PUBLIC_DIRECTORY);
 		public_dir.mkdirs();
 
-		netcoordinator = new NetworkCoordinator();
-		netcoordinator.start();
 	}
-	
+
+
+	public void linkGui(P2PFSGui g) {
+		gui = g;
+	}
+
+	public void linkNC(NetworkCoordinator n) {
+		netcoordinator = n;
+	}
+
+
 	private static void copyFiles(File in_file, String outdir) throws FileNotFoundException, IOException{
 		int b;
 		try (

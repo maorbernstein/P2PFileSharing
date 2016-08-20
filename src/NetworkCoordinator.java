@@ -22,7 +22,23 @@ public class NetworkCoordinator extends Thread implements NetworkCoordinatorUser
 	GUINetworkCoordinator_IF gui;
 	private boolean sendFileStarted = false;
 	private String getFilename;
-	
+
+	public void linkGui(P2PFSGui g) {
+		gui = g;
+	}
+
+	public void linkUM(UserManager u) {
+		usermanager = u;
+	}
+
+	public void linkFM(FileManager f) {
+		filemanager = f;
+	}
+
+	public NetworkCoordinator(){
+		this.start();
+	}
+
 	private enum MESSAGE_TYPE {
 		// BCASTS
 		ADD_USER_BCAST(0), REMOVE_USER_BCAST(1), ADD_FILE_BCAST(2), UPDATE_FILE_BCAST(3), REMOVE_FILE_BCAST(4),
@@ -41,7 +57,8 @@ public class NetworkCoordinator extends Thread implements NetworkCoordinatorUser
 			return _type;
 		}
 	};
-	
+
+
 	private void sendMsg(byte message_type, int message_length, byte[] message, String IP){
 		byte[] frame = new byte[message_length + HDR_LENGTH];
 		frame[0] = message_type;
