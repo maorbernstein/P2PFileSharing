@@ -21,6 +21,7 @@ public class NetworkCoordinator implements Runnable, NetworkCoordinatorUserManag
 	FileManagerCoordinator_IF filemanager;
 	GUINetworkCoordinator_IF gui;
 	private boolean sendFileStarted = false;
+	private String getFilename;
 	
 	private enum MESSAGE_TYPE {
 		// BCASTS
@@ -107,7 +108,9 @@ public class NetworkCoordinator implements Runnable, NetworkCoordinatorUserManag
 	}
 	
 	public void exit() {
-		
+		byte[] message = usermanager.getMyUsername().getBytes();
+		byte message_type = MESSAGE_TYPE.REMOVE_USER_BCAST.toByte();
+		sendBcastMsg(message_type, message.length, message);
 	}
 	
 	// FileManager BCASTS
@@ -142,7 +145,7 @@ public class NetworkCoordinator implements Runnable, NetworkCoordinatorUserManag
 		filemanager.readNetworkFileInit(username, filename);
 		int count;
 		count = filemanager.readNetworkFileChunk(username, filename, message);
-		while (count >= FILE_CHUNK_SIZE) {
+		while (count > 0) {
 			sendMsg(message_type, count, message, usermanager.getNetworkUserIP(username));
 		}
 		filemanager.readNetworkFileDone(username, filename);
@@ -151,24 +154,27 @@ public class NetworkCoordinator implements Runnable, NetworkCoordinatorUserManag
 	// Receive Messages
 	@Override
 	public void run(){
-		try(
-			ServerSocket listening_socket = new ServerSocket();
-		){
-			while(true){
-				Socket new_socket = listening_socket.accept();
-				InputStream in = new_socket.getInputStream();
-				byte[] hdr = new byte[HDR_LENGTH];
-				in.read(hdr);
-				int message_length = (int)( (hdr[1] << 8) + hdr[2] );
-				byte[] message = new byte[message_length];
-				in.read(message);
-				byte message_type = hdr[0];
-				String IP = new_socket.getInetAddress().toString();
-				recvMsg(message_type, message, IP);
-				in.close();
-				new_socket.close();
+		try (ServerSocket listening_socket = new ServerSocket(P2P_PORT);) {
+			while (true) {
+				try (Socket new_socket = listening_socket.accept();
+					InputStream in = new_socket.getInputStream();) {
+					byte[] hdr = new byte[HDR_LENGTH];
+					in.read(hdr);
+					int message_length = (int)( (hdr[1] << 8) + hdr[2] );
+					byte[] message = new byte[message_length];
+					in.read(message);
+					byte message_type = hdr[0];
+					String IP = new_socket.getInetAddress().toString();
+					recvMsg(message_type, message, IP);
+					in.close();
+					new_socket.close();
+				}
+				catch (IOException e) {
+					System.out.println(e.getMessage());
+				}
 			}
-		}catch(IOException e){
+		} catch (IOException e) {
+			System.out.println(e.getMessage());
 		}
 	}
 	
@@ -222,16 +228,16 @@ public class NetworkCoordinator implements Runnable, NetworkCoordinatorUserManag
 			sendFile(message.toString(), IP);
 		}
 		else if (message_type == MESSAGE_TYPE.SEND_FILE.toByte()) {
-			// TODO: How to get filename?
 			if (!sendFileStarted) {
-				//filemanager.writeNetworkFileInit(usermanager.getNetworkUserName(IP), filename);
+				filemanager.writeNetworkFileInit(usermanager.getNetworkUserName(IP), getFilename);
 				sendFileStarted = true;
 			}
-			else if(sendFileStarted && message.length < FILE_CHUNK_SIZE) {
-				//filemanager.writeNetworkFileChunk(usermanager.getNetworkUserName(IP), filename, message));
+			else if(sendFileStarted && message.length > 0) {
+				filemanager.writeNetworkFileChunk(usermanager.getNetworkUserName(IP), getFilename, message);
 			}
 			else {
-				//filemanager.writeNetworkFileDone(usermanager.getNetworkUserName(IP), filename);
+				filemanager.writeNetworkFileDone(usermanager.getNetworkUserName(IP), getFilename);
+				sendFileStarted = false;
 			}
 		}
 		else {
