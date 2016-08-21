@@ -71,16 +71,19 @@ public class UserManager implements UserManagerGUI_IF, UserManagerCoordinator_IF
 		return user_ledger.keySet();
 	}
 	
-	public boolean addNetworkUser(String username, InetAddress IP) {
+	public void addNetworkUser(String username, InetAddress IP) {
 		if(user_ledger.containsKey(username) || (username == own_user_name) ){
 			// Notify Coordinator that user name already exists
-			return false;
+			return;
 		}
 		user_ledger.put(username, IP);
 		filemanager.addUser(username);
 		gui.addUser(username);
 		showState();
-		return true;
+	}
+	
+	public boolean isUsernameTaken(String username){
+		return (user_ledger.containsKey(username) || (username == own_user_name) );
 	}
 	
 	public void removeNetworkUser(String username, InetAddress ip){
@@ -156,5 +159,10 @@ public class UserManager implements UserManagerGUI_IF, UserManagerCoordinator_IF
 
 	public String getMyUsername() {
 		return own_user_name;
+	}
+
+	@Override
+	public Set<Entry<String, InetAddress>> getAllUsernameIPPairs() {
+		return user_ledger.entrySet();
 	}
 }
