@@ -300,7 +300,7 @@ public class FileManager implements FileManagerGUI_IF, FileManagerCoordinator_IF
 		
 	public void readNetworkFileInit(String username, String filename) {
 		Iterator<String> iterator;
-		if(!golden_chest.contains(filename){
+		if(!golden_chest.contains(filename) {
 		 // TODO:NetworkCoordinator: Notify user name requested not found (NC - Filemanager Username Mismatch)
 		}
 		else {
