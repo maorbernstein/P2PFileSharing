@@ -28,7 +28,7 @@ public class NetworkCoordinator implements Runnable, NetworkCoordinatorUserManag
 		// Join Network
 		JOIN_GROUP(5), USERNAME_TAKEN(6), ADD_USER_SINGLE(7), ADD_FILE_SINGLE(8),
 		// Get File
-		GET_FILE(9), SEND_FILE(10);
+		GET_FILE(9), SEND_FILE(10), SEND_FILE_READY(11);
 		
 		private final byte _type;
 		
@@ -146,6 +146,9 @@ public class NetworkCoordinator implements Runnable, NetworkCoordinatorUserManag
 			sendMsg(message_type, count, message, usermanager.getNetworkUserIP(username));
 		}
 		filemanager.readNetworkFileDone(username, filename);
+	}
+	
+	public void removeFileHandler(FileTransferHandler file_transfer_handler){
 	}
 	
 	// Receive Messages
