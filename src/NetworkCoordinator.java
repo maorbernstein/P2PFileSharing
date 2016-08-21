@@ -11,6 +11,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.Map.Entry;
 import java.util.Set;
 import utilities.*;
 
@@ -127,10 +128,22 @@ public class NetworkCoordinator extends Thread implements NetworkCoordinatorUser
 		sendMsg(message_type, message.length, message, usermanager.getNetworkUserIP(username));
 	}
 	
+	public void addUserSingle(Pair<String, InetAddress> username_ip_pair, InetAddress address) {
+		byte[] message = createAddUserMsg(username_ip_pair);
+		byte message_type = MESSAGE_TYPE.ADD_USER_SINGLE.toByte();
+		sendMsg(message_type, message.length, message, address);
+	}
+	
 	public void addFileSingle(String filename, String username) {
 		byte[] message = filename.getBytes();
 		byte message_type = MESSAGE_TYPE.ADD_FILE.toByte();
 		sendMsg(message_type, message.length, message, usermanager.getNetworkUserIP(username));
+	}
+	
+	public void addFileSingle(String filename, InetAddress address) {
+		byte[] message = filename.getBytes();
+		byte message_type = MESSAGE_TYPE.ADD_FILE.toByte();
+		sendMsg(message_type, message.length, message, address);
 	}
 	
 	public void exit() {
@@ -264,26 +277,26 @@ public class NetworkCoordinator extends Thread implements NetworkCoordinatorUser
 		} else if (message_type == MESSAGE_TYPE.JOIN_GROUP.toByte()) {
 			// Check if username is taken
 			String username = new String(message, StandardCharsets.UTF_8);
-			// 2(1)
-			if (!usermanager.addNetworkUser(username, srcIP)) {
+			if(usermanager.isUsernameTaken(username)){
 				usernameTaken(username, srcIP);
 			} else {
-				// 3.*(1)
-				addUserBcast(new Pair<>(username, srcIP));
-				// 1(2)
-				addUserSingle(new Pair<String, InetAddress>(usermanager.getMyUsername(), UserManager.getMyIP()), username);
-				// 1(2.files)
+				Pair<String, InetAddress> new_user_ip_pair = new Pair<>(username, srcIP);
+				// Step 1) 1(2) 2->1
+				addUserSingle(new Pair<String, InetAddress>(usermanager.getMyUsername(), UserManager.getMyIP()), srcIP);
+				// Step 2) 1(2.files) 2->1
 				Iterator<String> ownFilePtr = filemanager.getOwnFiles();
 				while(ownFilePtr.hasNext()){
 					String filename = (String) ownFilePtr.next();
-					addFileSingle(filename, message.toString());
+					addFileSingle(filename, srcIP);
 				}
-				// Send N addUserSingle(), 1(3.*) 1(3.*.files)
-				Set<String> users = usermanager.getAllUsernames();
-				for (String user : users) {
-					InetAddress user_ip = usermanager.getNetworkUserIP(user);
-					addUserSingle(new Pair<>(user, user_ip) , username);
+				// Step 3) 1(3.*) 2->1
+				for (Entry<String, InetAddress> e: usermanager.getAllUsernameIPPairs() ) {
+					addUserSingle(new Pair<>(e.getKey(), e.getValue()) , srcIP);
 				}
+				// Step 4) 3.*(1), 1(3.*.files)  2->3.* 
+				addUserBcast(new_user_ip_pair);
+				// Step 5) 2(1)
+				usermanager.addNetworkUser(username, srcIP);
 			}
 		} else if (message_type == MESSAGE_TYPE.USERNAME_TAKEN.toByte()) {
 			gui.connectionStatus(true, false);
