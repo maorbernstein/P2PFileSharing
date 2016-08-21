@@ -72,7 +72,7 @@ public class UserManager implements UserManagerGUI_IF, UserManagerCoordinator_IF
 	}
 	
 	public void addNetworkUser(String username, InetAddress IP) {
-		if(user_ledger.containsKey(username) || (username == own_user_name) ){
+		if(user_ledger.containsKey(username) || (username.equals(own_user_name) ) ){
 			// Notify Coordinator that user name already exists
 			return;
 		}
@@ -83,14 +83,14 @@ public class UserManager implements UserManagerGUI_IF, UserManagerCoordinator_IF
 	}
 	
 	public boolean isUsernameTaken(String username){
-		return (user_ledger.containsKey(username) || (username == own_user_name) );
+		return (user_ledger.containsKey(username) || (username.equals(own_user_name) ) );
 	}
 	
 	public void removeNetworkUser(String username, InetAddress ip){
 		showState();
 		if(!user_ledger.containsKey(username)){
 			// Notify Coordinator that user name does not exist
-		} else if(user_ledger.get(username) != ip){
+		} else if( !user_ledger.get(username).equals(ip) ){
 			// Notify Coordinator that this user name does not have that ip
 		} else{
 			user_ledger.remove(username);
@@ -115,7 +115,8 @@ public class UserManager implements UserManagerGUI_IF, UserManagerCoordinator_IF
 			return "";
 		}
 		for(Map.Entry<String, InetAddress> entry: user_ledger.entrySet()){
-			if(entry.getValue() == IP){
+			InetAddress to_compare = entry.getValue();
+			if(to_compare.equals(IP)){
 				return entry.getKey();
 			}
 		}
@@ -146,7 +147,7 @@ public class UserManager implements UserManagerGUI_IF, UserManagerCoordinator_IF
 	public String generateInvitationFile() throws NoIPFoundException{
 		InetAddress ip = getMyIP();
 		showState();
-		if(ip == null){
+		if( ip.equals(null) ){
 			throw new NoIPFoundException();
 		}
 		return filemanager.generateInvitationFile(ip.toString());

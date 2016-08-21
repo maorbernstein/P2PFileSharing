@@ -128,6 +128,7 @@ public class FileManager implements FileManagerGUI_IF, FileManagerCoordinator_IF
 				updateNetworkFile(filename, username);
 			} else {
 				file_list.add(filename);
+				gui.addNewFile(username, filename);
 			}
 		}
 		showState();
@@ -172,7 +173,7 @@ public class FileManager implements FileManagerGUI_IF, FileManagerCoordinator_IF
 	}
 	
 	public void writeNetworkFileDone(String username, String filename){
-		Pair<String, String> p = new Pair<String, String>(username, filename);
+		Pair<String, String> p = new Pair<>(username, filename);
 		FileOutputStream out = pending_recving_files.get(p);
 		if(out == null){
 			// TODO Network Coordinator: writeNetworkFileInit was not called properly
