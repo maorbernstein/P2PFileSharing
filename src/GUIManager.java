@@ -18,9 +18,6 @@ import java.util.NoSuchElementException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static javafx.application.Platform.isFxApplicationThread;
-import static javafx.application.Platform.runLater;
-
 /*****************************************************************************************
  * <p>
  * Class Name:     P2PFSGUI
@@ -34,7 +31,7 @@ import static javafx.application.Platform.runLater;
  * <p>
  ****************************************************************************************/
 
-public class P2PFSGui extends Application implements
+public class GUIManager extends Application implements
         GUIFileManager_IF, GUINetworkCoordinator_IF, GUIUserManager_IF
 {
     // Define the GUI Elements
@@ -46,10 +43,10 @@ public class P2PFSGui extends Application implements
     private String username;
 
     // Define guiElems object to hold all GUI components
-    private P2PFSGui_elements guiElems;
+    private GUIElements guiElems;
 
     // Define error element to throw notifications as needed
-    private P2PFSGui_notification notify = new P2PFSGui_notification();
+    private GUINotification notify = new GUINotification();
 
     // Define regular expression for format of username
     private final String USERNAME_REGEX = "^[A-Z|a-z][A-Z|a-z|0-9]+$";
@@ -65,10 +62,10 @@ public class P2PFSGui extends Application implements
     // Create Timeout
     private PauseTransition timeout;
 
-    public P2PFSGui(FileManagerGUI_IF fm, UserManagerGUI_IF um, Stage mainStage)
+    public GUIManager(FileManagerGUI_IF fm, UserManagerGUI_IF um, Stage mainStage)
     {
         // Send GUI Stage element to guiElems
-        guiElems = new P2PFSGui_elements(mainStage, fm, um);
+        guiElems = new GUIElements(mainStage, fm, um);
     }
 
     // Start the GUI
@@ -123,7 +120,7 @@ public class P2PFSGui extends Application implements
 
                         timeout = new PauseTransition(Duration.seconds(guiElems.GUI_TIMEOUT_SEC));
 
-                        P2PFSGui_notification.createLoadingPopup();
+                        GUINotification.createLoadingPopup();
                         timeout.setOnFinished(event ->
                         {
                             if (connection && unameOk)
@@ -132,7 +129,7 @@ public class P2PFSGui extends Application implements
 
                                 createMainStage();
 
-                                P2PFSGui_user me = new P2PFSGui_user(username, guiElems, true);
+                                GUIUser me = new GUIUser(username, guiElems, true);
                                 guiElems.setMe(me);
                                 guiElems.redraw();
 
@@ -172,7 +169,7 @@ public class P2PFSGui extends Application implements
                 createMainStage();
 
                 // Set current user as main user.
-                P2PFSGui_user me = new P2PFSGui_user(username, guiElems, true);
+                GUIUser me = new GUIUser(username, guiElems, true);
                 guiElems.setMe(me);
                 guiElems.redraw();
 
@@ -358,7 +355,7 @@ public class P2PFSGui extends Application implements
     public void addNewFile(String user, String filename)
     {
         guiElems.getUser(user).addFile(
-                new P2PFSGui_file(filename, user, guiElems, false));
+                new GUIFile(filename, user, guiElems, false));
 
         System.out.println("Added User: " + user + " Filename: " + filename);
         guiElems.redraw();
@@ -388,7 +385,7 @@ public class P2PFSGui extends Application implements
         try
         {
             guiElems.getUser(user).getFile(
-                    filename).setStatus(P2PFSGui_file.FileStatus.updatedFile);
+                    filename).setStatus(GUIFile.FileStatus.updatedFile);
         }catch (NoSuchElementException e)
         {
             System.out.println("Update Element not found. \n    Username: " + user
@@ -402,7 +399,7 @@ public class P2PFSGui extends Application implements
     @Override
     public void addUser(String username)
     {
-        guiElems.addUser(new P2PFSGui_user(username, guiElems, false));
+        guiElems.addUser(new GUIUser(username, guiElems, false));
         System.out.println("Added User: " + username );
     }
 
@@ -434,7 +431,7 @@ public class P2PFSGui extends Application implements
             }
         }
 
-        P2PFSGui_notification.destroyLoadingPopup();
+        GUINotification.destroyLoadingPopup();
         timeout.jumpTo(Duration.seconds(guiElems.GUI_TIMEOUT_SEC));
     }
 

@@ -18,7 +18,7 @@ public class UserManager implements UserManagerGUI_IF, UserManagerCoordinator_IF
 		user_ledger = new HashMap<String, InetAddress>();
 	}
 
-	public void linkGui(P2PFSGui g) {
+	public void linkGui(GUIManager g) {
 		gui = g;
 	}
 

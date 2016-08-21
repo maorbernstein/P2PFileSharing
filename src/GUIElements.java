@@ -1,4 +1,3 @@
-import javafx.concurrent.Task;
 import javafx.scene.Scene;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.Tab;
@@ -15,7 +14,7 @@ import static javafx.application.Platform.runLater;
 
 /*****************************************************************************************
  *  <p>
- *  Class Name:     P2PFSGui_elements
+ *  Class Name:     GUIElements
  *  <p>
  *  Purpose:        Contain all the GUI elements in one location accessible by multiple
  *                  classes
@@ -26,7 +25,7 @@ import static javafx.application.Platform.runLater;
  *  IDE Used:       Intellij 2016.1.3
  *  <p>
  ****************************************************************************************/
-class P2PFSGui_elements
+class GUIElements
 {
     private ScrollPane SP;
     private Scene scene;
@@ -37,11 +36,11 @@ class P2PFSGui_elements
 
     // Define Array lists for 3 types of lists
     // -- List of users who are local user (Only one user)
-    private ArrayList<P2PFSGui_user> myList;
+    private ArrayList<GUIUser> myList;
     // -- List of users who are we can download from
-    private ArrayList<P2PFSGui_user> userList;
+    private ArrayList<GUIUser> userList;
     // -- List of users who are downloading from us
-    private ArrayList<P2PFSGui_user> uploadingList;
+    private ArrayList<GUIUser> uploadingList;
 
     final static int MAX_WINDOW_HEIGHT = 500;
     final static int MAX_WINDOW_WIDTH = 510;
@@ -51,13 +50,13 @@ class P2PFSGui_elements
 
     final static int GUI_TIMEOUT_SEC = 60;
 
-    P2PFSGui_elements(Stage s, FileManagerGUI_IF f, UserManagerGUI_IF u)
+    GUIElements(Stage s, FileManagerGUI_IF f, UserManagerGUI_IF u)
     {
         stage = s;
 
-        myList = new ArrayList<P2PFSGui_user>();
-        userList = new ArrayList<P2PFSGui_user>();
-        uploadingList = new ArrayList<P2PFSGui_user>();
+        myList = new ArrayList<GUIUser>();
+        userList = new ArrayList<GUIUser>();
+        uploadingList = new ArrayList<GUIUser>();
 
         fm = f;
         um = u;
@@ -89,10 +88,10 @@ class P2PFSGui_elements
     {
         return fm;
     }
-    private P2PFSGui_user getUser(ArrayList<P2PFSGui_user> list, String name)
+    private GUIUser getUser(ArrayList<GUIUser> list, String name)
     {
         // Search for User
-        for (P2PFSGui_user user : list)
+        for (GUIUser user : list)
         {
             if (user.getUsername().equals(name))
             {
@@ -104,12 +103,12 @@ class P2PFSGui_elements
         throw new NoSuchElementException();
     }
 
-    P2PFSGui_user getMe()
+    GUIUser getMe()
     {
         return myList.get(0);
     }
 
-    P2PFSGui_user getUser(String name)
+    GUIUser getUser(String name)
     {
        try
         {
@@ -120,7 +119,7 @@ class P2PFSGui_elements
         }
     }
 
-    P2PFSGui_user getUploadUser(String name)
+    GUIUser getUploadUser(String name)
     {
         try
         {
@@ -146,13 +145,13 @@ class P2PFSGui_elements
         stage = s;
     }
 
-    void setMe(P2PFSGui_user user)
+    void setMe(GUIUser user)
     {
         myList.add(user);
     }
 
     // Add and Remove users
-    void addUser(P2PFSGui_user user)
+    void addUser(GUIUser user)
     {
         userList.add(user);
         redraw();
@@ -161,7 +160,7 @@ class P2PFSGui_elements
     void removeUser(String name)
     {
 
-        for (P2PFSGui_user user : userList)
+        for (GUIUser user : userList)
         {
             if (user.getUsername().equals(name))
             {
@@ -176,11 +175,11 @@ class P2PFSGui_elements
     void upload(String user, String filename)
     {
         // Create new file
-        P2PFSGui_file file = new P2PFSGui_file(filename, this);
-        file.setStatus(P2PFSGui_file.FileStatus.uploadingFile);
+        GUIFile file = new GUIFile(filename, this);
+        file.setStatus(GUIFile.FileStatus.uploadingFile);
 
         // Set User
-        P2PFSGui_user upldUser;
+        GUIUser upldUser;
 
         // Check if user exists
         try
@@ -192,7 +191,7 @@ class P2PFSGui_elements
         } catch (NoSuchElementException e)
         {
             // else add new user
-            upldUser = new P2PFSGui_user(user, this);
+            upldUser = new GUIUser(user, this);
             upldUser.addFile(file);
             uploadingList.add(upldUser);
         }
@@ -203,7 +202,7 @@ class P2PFSGui_elements
     void finishUpload(String user, String filename)
     {
         // Set Download User
-        P2PFSGui_user upldUser;
+        GUIUser upldUser;
 
         // Check if user exists
         try
@@ -225,13 +224,13 @@ class P2PFSGui_elements
     void finishDownload(String user, String filename)
     {
         // Set Download User
-        P2PFSGui_user dnldUser;
+        GUIUser dnldUser;
 
         // Check if user exists
         try
         {
             dnldUser = getUser(user);
-            dnldUser.getFile(filename).setStatus(P2PFSGui_file.FileStatus.normalFile);
+            dnldUser.getFile(filename).setStatus(GUIFile.FileStatus.normalFile);
         } catch (NoSuchElementException e)
         {
             throw e;
@@ -283,7 +282,7 @@ class P2PFSGui_elements
         }
     }
 
-    private VBox createVB(ArrayList<P2PFSGui_user> list)
+    private VBox createVB(ArrayList<GUIUser> list)
     {
         VBox vb = new VBox();
         vb.setLayoutX(5);
@@ -294,7 +293,7 @@ class P2PFSGui_elements
                 "-fx-border-width: 2;" +
                 "-fx-border-insets: 5;");
 
-        for (P2PFSGui_user user : list)
+        for (GUIUser user : list)
         {
             for (HBox hb : user.getHBoxList())
             {
@@ -315,7 +314,7 @@ class P2PFSGui_elements
 
         if (uploadingList.size() > 0)
         {
-            P2PFSGui_notification notify = new P2PFSGui_notification();
+            GUINotification notify = new GUINotification();
 
             notify.createNotification("Users are still downloading files. \nPlease wait until " +
                     "all downloads are finished", "Finishing downloads");

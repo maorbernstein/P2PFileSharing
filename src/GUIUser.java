@@ -13,7 +13,7 @@ import java.util.NoSuchElementException;
 
 /*****************************************************************************************
  *  <p>
- *  Class Name:     P2PFSGui_user
+ *  Class Name:     GUIUser
  *  <p>
  *  Purpose:        Class to contain a User
  *  <p>
@@ -23,34 +23,34 @@ import java.util.NoSuchElementException;
  *  IDE Used:       Intellij 2016.1.3
  *  <p>
  ****************************************************************************************/
-class P2PFSGui_user
+class GUIUser
 {
     private String username;
     // Boolean to determine if User is local user
     private boolean isMe;
-    private P2PFSGui_elements guiElem;
+    private GUIElements guiElem;
 
     // ArrayList to contain all files associated with user
-    private ArrayList<P2PFSGui_file> filelist;
+    private ArrayList<GUIFile> filelist;
 
-    P2PFSGui_user(String name, P2PFSGui_elements elems, Boolean me)
+    GUIUser(String name, GUIElements elems, Boolean me)
     {
         username = name;
         isMe = me;
 
         guiElem = elems;
 
-        filelist = new ArrayList<P2PFSGui_file>();
+        filelist = new ArrayList<GUIFile>();
     }
 
-    P2PFSGui_user(String name, P2PFSGui_elements elems)
+    GUIUser(String name, GUIElements elems)
     {
         username = name;
         isMe = false;
 
         guiElem = elems;
 
-        filelist = new ArrayList<P2PFSGui_file>();
+        filelist = new ArrayList<GUIFile>();
     }
 
     String getUsername()
@@ -60,7 +60,7 @@ class P2PFSGui_user
 
     void removeFile(String filename)
     {
-        for (P2PFSGui_file file : filelist)
+        for (GUIFile file : filelist)
         {
             if (file.getFilename().equals(filename))
             {
@@ -70,11 +70,11 @@ class P2PFSGui_user
         }
     }
 
-    P2PFSGui_file getFile(String filename)
+    GUIFile getFile(String filename)
     {
 
         // Search for file
-        for (P2PFSGui_file file : filelist)
+        for (GUIFile file : filelist)
         {
             if (file.getFilename().equals(filename))
             {
@@ -86,7 +86,7 @@ class P2PFSGui_user
         throw new NoSuchElementException();
     }
 
-    void addFile(P2PFSGui_file file)
+    void addFile(GUIFile file)
     {
         filelist.add(file);
     }
@@ -121,7 +121,7 @@ class P2PFSGui_user
         list.add(sep2HB);
 
         // Add files
-        for (P2PFSGui_file element : filelist)
+        for (GUIFile element : filelist)
         {
             list.add(element.createHBox());
         }
@@ -151,11 +151,11 @@ class P2PFSGui_user
                 File file = invFileChooser.showOpenDialog(guiElem.getStage());
 
 
-                P2PFSGui_file newFile = new P2PFSGui_file(file.getName(), username, guiElem, isMe);
+                GUIFile newFile = new GUIFile(file.getName(), username, guiElem, isMe);
 
                 if(filelist.contains(newFile))
                 {
-                    P2PFSGui_notification.createError("Duplicate File");
+                    GUINotification.createError("Duplicate File");
                 }
                 else
                 {

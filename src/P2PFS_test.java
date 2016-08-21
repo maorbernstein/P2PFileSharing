@@ -19,9 +19,9 @@ import javafx.stage.Stage;
  * IDE Used:       Intellij 2016.1.3
  * <p>
  ****************************************************************************************/
-public class P2PFSGui_test extends Application
+public class P2PFS_test extends Application
 {
-    private P2PFSGui gui;
+    private GUIManager gui;
     private FileManager fm;
     private UserManager um;
     private NetworkCoordinator nm;
@@ -33,7 +33,7 @@ public class P2PFSGui_test extends Application
         um = new UserManager();
         nm = new NetworkCoordinator();
 
-        gui = new P2PFSGui(fm, um, primaryStage);
+        gui = new GUIManager(fm, um, primaryStage);
 
         fm.linkGui(gui);
         fm.linkNC(nm);

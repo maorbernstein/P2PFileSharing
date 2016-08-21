@@ -4,7 +4,6 @@ import java.io.FileOutputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintStream;
-import java.nio.file.Files;
 import java.util.*;
 import java.util.Map.Entry;
 
@@ -53,7 +52,7 @@ public class FileManager implements FileManagerGUI_IF, FileManagerCoordinator_IF
 	}
 
 
-	public void linkGui(P2PFSGui g) {
+	public void linkGui(GUIManager g) {
 		gui = g;
 	}
 

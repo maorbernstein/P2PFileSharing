@@ -11,7 +11,7 @@ import java.io.File;
 
 /*****************************************************************************************
  *  <p>
- *  Class Name:     P2PFSGui_file
+ *  Class Name:     GUIFile
  *  <p>
  *  Purpose:        Class to contain files
  *  <p>
@@ -21,7 +21,7 @@ import java.io.File;
  *  IDE Used:       Intellij 2016.1.3
  *  <p>
  ****************************************************************************************/
-class P2PFSGui_file
+class GUIFile
 {
     private String filename;
     private String username;
@@ -30,7 +30,7 @@ class P2PFSGui_file
     private double uploadProgress;
     private boolean isMe;
     private Image fileImg;
-    private P2PFSGui_elements guiElem;
+    private GUIElements guiElem;
 
     // Define images for file icons
     private static final Image newFile = new Image("/resources/newFile.png");
@@ -47,7 +47,7 @@ class P2PFSGui_file
         newFile, downloadingFile, normalFile, updatedFile, uploadingFile
     };
 
-    P2PFSGui_file(String file, String user, P2PFSGui_elements elem, Boolean me)
+    GUIFile(String file, String user, GUIElements elem, Boolean me)
     {
         filename = file;
         username = user;
@@ -71,7 +71,7 @@ class P2PFSGui_file
     }
 
     // Constructor if file is definitely not for local user
-    P2PFSGui_file(String file, P2PFSGui_elements elem)
+    GUIFile(String file, GUIElements elem)
     {
         filename = file;
         isMe = false;
@@ -181,7 +181,7 @@ class P2PFSGui_file
                 }
                 else
                 {
-                    P2PFSGui_notification.createError("Filenames do not match");
+                    GUINotification.createError("Filenames do not match");
                 }
             });
 

@@ -1,13 +1,5 @@
 import javafx.application.Application;
-import javafx.event.ActionEvent;
-import javafx.geometry.Pos;
-import javafx.scene.Scene;
-import javafx.scene.control.Button;
-import javafx.scene.control.TextField;
-import javafx.scene.layout.GridPane;
 import javafx.stage.Stage;
-
-import java.io.File;
 
 /*****************************************************************************************
  * <p>
@@ -23,7 +15,7 @@ import java.io.File;
  ****************************************************************************************/
 public class P2PFS extends Application
 {
-    private P2PFSGui gui;
+    private GUIManager gui;
     private FileManager fm;
     private UserManager um;
     private NetworkCoordinator nm;
@@ -35,7 +27,7 @@ public class P2PFS extends Application
         um = new UserManager();
         nm = new NetworkCoordinator();
 
-        gui = new P2PFSGui(fm, um, primaryStage);
+        gui = new GUIManager(fm, um, primaryStage);
 
         fm.linkGui(gui);
         fm.linkNC(nm);

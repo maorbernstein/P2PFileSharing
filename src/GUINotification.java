@@ -10,9 +10,12 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.stage.Stage;
 
+import static javafx.application.Platform.isFxApplicationThread;
+import static javafx.application.Platform.runLater;
+
 /*****************************************************************************************
  *  <p>
- *  Class Name:     P2PFSGui_notification
+ *  Class Name:     GUINotification
  *  <p>
  *  Purpose:        General purpose notification generator
  *  <p>
@@ -22,7 +25,7 @@ import javafx.stage.Stage;
  *  IDE Used:       Intellij 2016.1.3
  *  <p>
  ****************************************************************************************/
-class P2PFSGui_notification
+class GUINotification
 {
     private static final Image notifyImg = new Image("/resources/notify.png");
     private static final Image errorImg = new Image("/resources/error.png");
@@ -65,19 +68,41 @@ class P2PFSGui_notification
 
         // Create scene
 
-        Scene notifyScene = new Scene(notifyGrid, P2PFSGui_elements.POPUP_WINDOW_WIDTH, P2PFSGui_elements.POPUP_WINDOW_HEIGHT);
+        Scene notifyScene = new Scene(notifyGrid, GUIElements.POPUP_WINDOW_WIDTH, GUIElements.POPUP_WINDOW_HEIGHT);
 
         // Create stage
-        Stage notifyStage = new Stage();
-        notifyStage.setScene(notifyScene);
-        notifyStage.setTitle(title);
+        final Stage[] notifyStage = new Stage[1];
 
         // Show Popup
-        notifyStage.show();
+        if (isFxApplicationThread())
+        {
+            notifyStage[0] = new Stage();
+            notifyStage[0].setScene(notifyScene);
+            notifyStage[0].setTitle(title);
+
+            notifyStage[0].show();
+        }
+        else
+        {
+            runLater(() -> {
+                notifyStage[0] = new Stage();
+                notifyStage[0].setScene(notifyScene);
+                notifyStage[0].setTitle(title);
+
+                notifyStage[0].show();
+            });
+        }
 
         // Set action on clicking OK button to close
         okBtn.setOnAction((ActionEvent e) -> {
-            notifyStage.close();
+            if (isFxApplicationThread())
+            {
+                notifyStage[0].close();
+            }
+            else
+            {
+                runLater(() -> notifyStage[0].close());
+            }
         });
 
     }
@@ -114,7 +139,7 @@ class P2PFSGui_notification
         loadingGrid.add(pBarFormat, 0, 1);
 
         // Create scene
-        Scene loadingScene = new Scene(loadingGrid, P2PFSGui_elements.POPUP_WINDOW_WIDTH, P2PFSGui_elements.POPUP_WINDOW_HEIGHT);
+        Scene loadingScene = new Scene(loadingGrid, GUIElements.POPUP_WINDOW_WIDTH, GUIElements.POPUP_WINDOW_HEIGHT);
 
         // Create stage
         loadingStage = new Stage();
