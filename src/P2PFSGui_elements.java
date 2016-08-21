@@ -47,28 +47,13 @@ class P2PFSGui_elements
 
     final static int GUI_TIMEOUT_SEC = 60;
 
-    P2PFSGui_elements(Stage s, P2PFSGui gui)
+    P2PFSGui_elements(Stage s, FileManagerGUI_IF f, UserManagerGUI_IF u)
     {
         stage = s;
 
         myList = new ArrayList<P2PFSGui_user>();
         userList = new ArrayList<P2PFSGui_user>();
         uploadingList = new ArrayList<P2PFSGui_user>();
-
-        FileManager f = new FileManager();
-        UserManager u = new UserManager();
-        NetworkCoordinator n = new NetworkCoordinator();
-
-        f.linkGui(gui);
-        f.linkNC(n);
-
-        u.linkGui(gui);
-        u.linkNC(n);
-        u.linkFM(f);
-
-        n.linkGui(gui);
-        n.linkFM(f);
-        n.linkUM(u);
 
         fm = f;
         um = u;

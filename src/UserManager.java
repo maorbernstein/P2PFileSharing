@@ -1,8 +1,5 @@
 import java.io.File;
-import java.net.Inet4Address;
-import java.net.InetAddress;
-import java.net.NetworkInterface;
-import java.net.SocketException;
+import java.net.*;
 import java.util.*;
 import java.util.Map.Entry;
 
@@ -10,7 +7,7 @@ import java.util.Map.Entry;
 
 public class UserManager implements UserManagerGUI_IF, UserManagerCoordinator_IF {
 	private String own_user_name;
-	private Map<String, String> user_ledger; // mapping from username to ip
+	private Map<String, InetAddress> user_ledger; // mapping from username to ip
 	private FileManagerUserManager_IF filemanager;
 	private NetworkCoordinatorUserManager_IF net_coordinator;
 	private GUIUserManager_IF gui;
@@ -18,7 +15,7 @@ public class UserManager implements UserManagerGUI_IF, UserManagerCoordinator_IF
 	UserManager()
 	{
 		own_user_name = "";
-		user_ledger = new HashMap<String, String>();
+		user_ledger = new HashMap<String, InetAddress>();
 	}
 
 	public void linkGui(P2PFSGui g) {
@@ -37,13 +34,13 @@ public class UserManager implements UserManagerGUI_IF, UserManagerCoordinator_IF
 	private void showState(){
 		System.out.println("Own username = " + own_user_name);
 		System.out.println("User ledger = {");
-		for(Entry<String, String> e: user_ledger.entrySet() ){
+		for(Entry<String, InetAddress> e: user_ledger.entrySet() ){
 			System.out.print(e.getKey() + ":" + e.getValue() + ", ");
 		}
 		System.out.println(" }");
 	}
 	
-	static public String getMyIP(){
+	static public InetAddress getMyIP(){
 	    try {
 	        Enumeration<NetworkInterface> interfaces = NetworkInterface.getNetworkInterfaces();
 	        while (interfaces.hasMoreElements()) {
@@ -56,17 +53,17 @@ public class UserManager implements UserManagerGUI_IF, UserManagerCoordinator_IF
 	            while(addresses.hasMoreElements()) {
 	                InetAddress addr = addresses.nextElement();
 	                if(addr instanceof Inet4Address){
-		                return addr.getHostAddress();
+		                return addr;
 	                }
 	            }
 	        }
 	    } catch (SocketException e) {
 	        // Should never happen
 	    }
-	    return "";
+	    return null;
 	}
 	
-	public Collection<String> getAllIPs(){
+	public Collection<InetAddress> getAllIPs(){
 		return user_ledger.values();
 	}
 	
@@ -74,7 +71,7 @@ public class UserManager implements UserManagerGUI_IF, UserManagerCoordinator_IF
 		return user_ledger.keySet();
 	}
 	
-	public boolean addNetworkUser(String username, String IP) {
+	public boolean addNetworkUser(String username, InetAddress IP) {
 		if(user_ledger.containsKey(username) || (username == own_user_name) ){
 			// Notify Coordinator that user name already exists
 			return false;
@@ -86,7 +83,7 @@ public class UserManager implements UserManagerGUI_IF, UserManagerCoordinator_IF
 		return true;
 	}
 	
-	public void removeNetworkUser(String username, String ip){
+	public void removeNetworkUser(String username, InetAddress ip){
 		showState();
 		if(!user_ledger.containsKey(username)){
 			// Notify Coordinator that user name does not exist
@@ -94,27 +91,27 @@ public class UserManager implements UserManagerGUI_IF, UserManagerCoordinator_IF
 			// Notify Coordinator that this user name does not have that ip
 		} else{
 			user_ledger.remove(username);
-			filemanager.addUser(username);
+			filemanager.removeUser(username);
 			gui.removeUser(username);
 		}
 	}
 	
-	public String getNetworkUserIP(String username){
+	public InetAddress getNetworkUserIP(String username){
 		showState();
 		if(!user_ledger.containsKey(username)){
 			// Notify Coordinator that username does not exist
-			return "";
+			return null;
 		}
 		return user_ledger.get(username);
 	}
 	
-	public String getNetworkUserName(String IP){
+	public String getNetworkUserName(InetAddress IP){
 		showState();
 		if(!user_ledger.containsValue(IP)){
 			// Notify Coordinator that IP does not exist
 			return "";
 		}
-		for(Map.Entry<String, String> entry: user_ledger.entrySet()){
+		for(Map.Entry<String, InetAddress> entry: user_ledger.entrySet()){
 			if(entry.getValue() == IP){
 				return entry.getKey();
 			}
@@ -129,14 +126,13 @@ public class UserManager implements UserManagerGUI_IF, UserManagerCoordinator_IF
 		String join_ip;
 		try {
 			join_ip = filemanager.getIPFromInvitationFile(invitation);
+			InetAddress ip = InetAddress.getByName(join_ip);
+			net_coordinator.joinGroup(username, ip);
 		} catch (NoSuchElementException e){
 			throw new NoIPFoundException();
-		}
-
-		if(join_ip == ""){
+		} catch (UnknownHostException e){
 			throw new NoIPFoundException();
 		}
-		net_coordinator.joinGroup(username, join_ip);
 	}
 	
 	public void createGroup(String username){
@@ -145,12 +141,12 @@ public class UserManager implements UserManagerGUI_IF, UserManagerCoordinator_IF
 	}
 	
 	public String generateInvitationFile() throws NoIPFoundException{
-		String ip = getMyIP();
+		InetAddress ip = getMyIP();
 		showState();
-		if(ip == ""){
+		if(ip == null){
 			throw new NoIPFoundException();
 		}
-		return filemanager.generateInvitationFile(ip);
+		return filemanager.generateInvitationFile(ip.toString());
 	}
 	
 	public void close(){
@@ -160,15 +156,5 @@ public class UserManager implements UserManagerGUI_IF, UserManagerCoordinator_IF
 
 	public String getMyUsername() {
 		return own_user_name;
-	}
-
-	@Override
-	public boolean isUsernameTaken(String username) {
-		showState();
-		if(user_ledger.containsKey(username) || (username == own_user_name) ){
-			// Notify Coordinator that user name already exists
-			return false;
-		}
-		return true;
 	}
 }

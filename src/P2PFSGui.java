@@ -62,15 +62,18 @@ public class P2PFSGui extends Application implements
     // Create Timeout
     private PauseTransition timeout;
 
+    public P2PFSGui(FileManagerGUI_IF fm, UserManagerGUI_IF um, Stage mainStage)
+    {
+        // Send GUI Stage element to guiElems
+        guiElems = new P2PFSGui_elements(mainStage, fm, um);
+    }
+
     // Start the GUI
     @Override
     public void start(Stage mainStage)
     {
         connection = false;
         unameOk = false;
-
-        // Send GUI Stage element to guiElems
-        guiElems = new P2PFSGui_elements(mainStage, this);
 
         createStartUpScene();
     }

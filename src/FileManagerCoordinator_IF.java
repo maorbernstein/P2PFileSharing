@@ -12,5 +12,4 @@ public interface FileManagerCoordinator_IF {
 	public int  readNetworkFileChunk(String username,String filename, byte[] bytes);
 	public void readNetworkFileDone(String username,String filename);
 	public Iterator<String> getOwnFiles();
-	public void removeAllNetworkFile(String username);
 }

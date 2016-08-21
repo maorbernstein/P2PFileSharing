@@ -267,11 +267,6 @@ public class FileManager implements FileManagerGUI_IF, FileManagerCoordinator_IF
 	public Iterator<String> getOwnFiles() {
 		return golden_chest.iterator();
 	}
-
-	@Override
-	public void removeAllNetworkFile(String username) {
-		file_ledger.remove(username);
-	}
 		
 	@Override
 	public void updateNetworkFile(String filename,String username){
