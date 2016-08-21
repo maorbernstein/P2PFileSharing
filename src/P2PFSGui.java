@@ -18,6 +18,9 @@ import java.util.NoSuchElementException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static javafx.application.Platform.isFxApplicationThread;
+import static javafx.application.Platform.runLater;
+
 /*****************************************************************************************
  * <p>
  * Class Name:     P2PFSGUI

@@ -1,3 +1,4 @@
+import javafx.concurrent.Task;
 import javafx.scene.Scene;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.Tab;
@@ -8,6 +9,9 @@ import javafx.stage.Stage;
 
 import java.util.ArrayList;
 import java.util.NoSuchElementException;
+
+import static javafx.application.Platform.isFxApplicationThread;
+import static javafx.application.Platform.runLater;
 
 /*****************************************************************************************
  *  <p>
@@ -269,7 +273,14 @@ class P2PFSGui_elements
         // Show the tab that was shown before
         tp.getSelectionModel().select(oldTP.getSelectionModel().getSelectedIndex());
 
-        SP.setContent(tp);
+        if (isFxApplicationThread())
+        {
+            SP.setContent(tp);
+        }
+        else
+        {
+            runLater(() -> SP.setContent(tp));
+        }
     }
 
     private VBox createVB(ArrayList<P2PFSGui_user> list)

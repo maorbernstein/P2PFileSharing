@@ -35,6 +35,17 @@ public class P2PFSGui_test extends Application
 
         gui = new P2PFSGui(fm, um, primaryStage);
 
+        fm.linkGui(gui);
+        fm.linkNC(nm);
+
+        um.linkGui(gui);
+        um.linkNC(nm);
+        um.linkFM(fm);
+
+        nm.linkGui(gui);
+        nm.linkFM(fm);
+        nm.linkUM(um);
+
         gui.start(primaryStage);
 
         // Setup GridPane for Notification PopUp
