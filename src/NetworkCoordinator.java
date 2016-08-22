@@ -335,6 +335,7 @@ public class NetworkCoordinator extends Thread implements NetworkCoordinatorUser
 			send_handler.start();
 		} else if (MESSAGE_TYPE.CHAT_MESSAGE.equals(message_type)){
 			// TODO: Call GUI with message and username
+			// gui.addMsg(username, msg);
 		} else {
 			throw new IllegalArgumentException("Invalid Message Type");
 		}

@@ -100,6 +100,10 @@ public class P2PFS_test extends Application
         Button fileNotFound = new Button("Throw File Not Found Ex");
         Button fileOpSucc = new Button("File Op Success");
 
+        Button sendBtn = new Button("Send");
+        TextField chatUserTF = new TextField("Username");
+        TextField chatMsgTF = new TextField("Message");
+
 
         // Add elements to GridPane
         testGrid.add(addUserBtn, 0, 0);
@@ -138,6 +142,10 @@ public class P2PFS_test extends Application
         testGrid.add(fileNotFound, 0, 11);
         testGrid.add(fileOpSucc, 1, 11);
         testGrid.add(fileIOEx, 2, 11);
+
+        testGrid.add(sendBtn, 0, 12);
+        testGrid.add(chatUserTF, 1, 12);
+        testGrid.add(chatMsgTF, 2, 12);
 
         // Create scene
         Scene testScene = new Scene(testGrid, 700, 400);
@@ -222,6 +230,11 @@ public class P2PFS_test extends Application
         fileOpSucc.setOnAction((ActionEvent e) ->
         {
             gui.fileOpSuccess();
+        });
+
+        sendBtn.setOnAction((ActionEvent e) ->
+        {
+            gui.addMsg(chatUserTF.getText(), chatMsgTF.getText());
         });
     }
 

@@ -1,9 +1,9 @@
+import javafx.event.ActionEvent;
 import javafx.scene.Scene;
-import javafx.scene.control.ScrollPane;
-import javafx.scene.control.Tab;
-import javafx.scene.control.TabPane;
+import javafx.scene.control.*;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 
 import java.util.ArrayList;
@@ -41,6 +41,7 @@ class GUIElements
     private ArrayList<GUIUser> userList;
     // -- List of users who are downloading from us
     private ArrayList<GUIUser> uploadingList;
+    private ArrayList<GUIMessages> messageList;
 
     final static int MAX_WINDOW_HEIGHT = 500;
     final static int MAX_WINDOW_WIDTH = 510;
@@ -57,6 +58,7 @@ class GUIElements
         myList = new ArrayList<GUIUser>();
         userList = new ArrayList<GUIUser>();
         uploadingList = new ArrayList<GUIUser>();
+        messageList = new ArrayList<GUIMessages>();
 
         fm = f;
         um = u;
@@ -260,6 +262,7 @@ class GUIElements
         Tab myFilesTab = new Tab();
         Tab networkFilesTab = new Tab();
         Tab requestedFilesTab = new Tab();
+        Tab chatTab = new Tab();
 
         // Create the tabs and create VBox with content from lists
         myFilesTab.setText("My Files");
@@ -268,11 +271,15 @@ class GUIElements
         networkFilesTab.setContent(createVB(userList));
         requestedFilesTab.setText("Requested Files");
         requestedFilesTab.setContent(createVB(uploadingList));
+        chatTab.setText("Network Chat");
+        chatTab.setContent(createChat());
+
 
         // Add tabs to TabPane
         tp.getTabs().add(myFilesTab);
         tp.getTabs().add(networkFilesTab);
         tp.getTabs().add(requestedFilesTab);
+        tp.getTabs().add(chatTab);
 
         // Set tabs to not have any close buttons
         tp.setTabClosingPolicy(TabPane.TabClosingPolicy.UNAVAILABLE);
@@ -314,6 +321,61 @@ class GUIElements
         }
 
         return vb;
+    }
+
+    private VBox createChat()
+    {
+        VBox inner = new VBox();
+        VBox outer = new VBox();
+        HBox chat = new HBox();
+
+        inner.setLayoutX(5);
+        inner.setSpacing(10);
+        inner.setMinHeight(MAX_WINDOW_HEIGHT - 80);
+        inner.setMinWidth(MAX_WINDOW_WIDTH - 35);
+        inner.setStyle("-fx-padding: 20;" +
+                "-fx-border-style: solid inside;" +
+                "-fx-border-width: 2;" +
+                "-fx-border-insets: 5;");
+
+        for (GUIMessages msg : messageList)
+        {
+            inner.getChildren().add(msg.createHBox());
+        }
+
+        ScrollPane sp = new ScrollPane(inner);
+        sp.setMinHeight(MAX_WINDOW_HEIGHT - 80);
+        sp.setMaxHeight(MAX_WINDOW_HEIGHT - 80);
+        sp.setVvalue(1.0);
+
+        TextField input = new TextField();
+        Button sendBtn = new Button("Send");
+
+        input.setMinWidth(MAX_WINDOW_WIDTH - 60);
+
+        chat.getChildren().add(input);
+        chat.getChildren().add(sendBtn);
+
+        sendBtn.setOnAction((ActionEvent e) ->
+        {
+            if(!input.getText().isEmpty())
+            {
+                addMessage(new GUIMessages(myList.get(0).getUsername(), input.getText(), true));
+                //Todo: Send new message to NC
+            }
+            input.clear();
+        });
+
+        outer.getChildren().add(sp);
+        outer.getChildren().add(chat);
+
+        return outer;
+    }
+
+    public void addMessage(GUIMessages msg)
+    {
+        messageList.add(msg);
+        redraw();
     }
 
     // Checks if all downloads are finished before closing the GUI

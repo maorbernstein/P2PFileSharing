@@ -332,6 +332,13 @@ public class GUIManager extends Application implements
     }
 
     @Override
+    public void addMsg(String user, String msg)
+    {
+        if(!msg.isEmpty())
+            guiElems.addMessage(new GUIMessages(user, msg, false));
+    }
+
+    @Override
     public void downloadPercentComplete(String user, String filename, double percent)
     {
         // Update percentage of file

@@ -5,4 +5,5 @@ public interface GUINetworkCoordinator_IF
     public void IOexception();
     public void downloadPercentComplete(String username, String filename, double percent);
     public void uploadPercentComplete(String username, String filename, double percent);
+    public void addMsg(String username, String msg);
 }
