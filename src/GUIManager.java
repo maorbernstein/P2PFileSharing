@@ -66,6 +66,7 @@ public class GUIManager extends Application implements
     {
         // Send GUI Stage element to guiElems
         guiElems = new GUIElements(mainStage, fm, um);
+
     }
 
     // Start the GUI
@@ -131,10 +132,10 @@ public class GUIManager extends Application implements
 
                                 GUIUser me = new GUIUser(username, guiElems, true);
                                 guiElems.setMe(me);
-                                guiElems.redraw();
 
                                 guiElems.getStage().show();
                                 startUpStage.close();
+                                guiElems.redraw();
                             } else
                             {
                                 System.out.println("Failed to join network");
@@ -171,11 +172,11 @@ public class GUIManager extends Application implements
                 // Set current user as main user.
                 GUIUser me = new GUIUser(username, guiElems, true);
                 guiElems.setMe(me);
-                guiElems.redraw();
 
                 guiElems.getStage().show();
 
                 startUpStage.close();
+                guiElems.redraw();
             }
         });
 

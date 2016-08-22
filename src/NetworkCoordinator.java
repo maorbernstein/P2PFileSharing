@@ -58,12 +58,8 @@ public class NetworkCoordinator extends Thread implements NetworkCoordinatorUser
 
 	public NetworkCoordinator() throws IOException{
 		super("Coordinator Listening Thread");
-		try(ServerSocket sock = new ServerSocket(P2P_PORT)){
-			listening_socket = sock;
-			this.start();
-		} catch(IOException e) {
-			throw e;
-		}
+		listening_socket = new ServerSocket(P2P_PORT);
+		this.start();
 	}
 
 
@@ -77,7 +73,7 @@ public class NetworkCoordinator extends Thread implements NetworkCoordinatorUser
 		}
 		Socket s = new Socket();
 		try{
-			s.connect(new InetSocketAddress(IP, P2P_PORT), 10);
+			s.connect(new InetSocketAddress(IP, P2P_PORT), 100);
 			OutputStream o = s.getOutputStream();
 			o.write(frame);
 			o.close();
@@ -122,10 +118,9 @@ public class NetworkCoordinator extends Thread implements NetworkCoordinatorUser
 		sendMsg(message_type, message.length, message, IP);
 	}
 	
-	public void usernameTaken(String username, InetAddress IP) {
-		byte[] message = username.getBytes();
+	public void usernameTaken(InetAddress IP) {
 		byte message_type = MESSAGE_TYPE.USERNAME_TAKEN.toByte();
-		sendMsg(message_type, message.length, message, IP);
+		sendMsg(message_type, 0, null, IP);
 	}
 	
 	public void addUserSingle(Pair<String, InetAddress> username_ip_pair, String username) {
@@ -252,7 +247,7 @@ public class NetworkCoordinator extends Thread implements NetworkCoordinatorUser
 				name_msg[k++] = message[i];
 			}
 		}
-		String new_name = name_msg.toString();
+		String new_name = new String(name_msg, StandardCharsets.UTF_8);
 		try {
 			InetAddress new_ip_address = InetAddress.getByAddress(ip_msg);
 			return new Pair<>(new_name, new_ip_address);
@@ -268,6 +263,9 @@ public class NetworkCoordinator extends Thread implements NetworkCoordinatorUser
 			Pair<String, InetAddress> username_ip_pair = parseAddUserMsg(message);
 			String new_username = username_ip_pair.first;
 			InetAddress new_ip = username_ip_pair.second;
+			if(message_type == MESSAGE_TYPE.ADD_USER_SINGLE.toByte()){
+				gui.connectionStatus(true, true);
+			}
 			usermanager.addNetworkUser(new_username, new_ip);
 			if(message_type == MESSAGE_TYPE.ADD_USER_BCAST.toByte()){
 				Iterator<String> ownFilePtr = filemanager.getOwnFiles();
@@ -288,7 +286,7 @@ public class NetworkCoordinator extends Thread implements NetworkCoordinatorUser
 			// Check if username is taken
 			String username = msg_string;
 			if(usermanager.isUsernameTaken(username)){
-				usernameTaken(username, srcIP);
+				usernameTaken(srcIP);
 			} else {
 				Pair<String, InetAddress> new_user_ip_pair = new Pair<>(username, srcIP);
 				// Step 1) 1(2) 2->1

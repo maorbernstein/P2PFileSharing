@@ -196,7 +196,7 @@ public class FileManager implements FileManagerGUI_IF, FileManagerCoordinator_IF
 		try {
 			copyFiles(f, GOLDEN_CHEST_DIRECTORY + f.getName());
 			golden_chest.add(f.getName());
-			//dwei netcoordinator.addFileBcast(f.getName());
+			netcoordinator.addFileBcast(f.getName());
 			// TODO GUI: Notify Success
 		} catch(FileNotFoundException e) {
 			// TODO GUI: Notify File not Found
@@ -216,7 +216,7 @@ public class FileManager implements FileManagerGUI_IF, FileManagerCoordinator_IF
 			if(pending_recving_files.containsKey(new Pair<String, String>(filename, username))){
 				// TODO GUI: Notify user that this file is already being downloaded 
 			} else {
-				//dwei netcoordinator.getFile(username, filename);
+				netcoordinator.getFile(username, filename);
 			}
 		} else {
 			// TODO GUI: Notify file not found in the ledger (file does not exist)
@@ -231,7 +231,7 @@ public class FileManager implements FileManagerGUI_IF, FileManagerCoordinator_IF
 		}
 		File f = new File(GOLDEN_CHEST_DIRECTORY + filename);
 		f.delete();
-		//dwei netcoordinator.removeFileBcast(filename);
+		netcoordinator.removeFileBcast(filename);
 		// TODO GUI: Notify file successfully removed
 		showState();
 	}
@@ -246,7 +246,7 @@ public class FileManager implements FileManagerGUI_IF, FileManagerCoordinator_IF
 			}
 			try {
 				copyFiles(f, GOLDEN_CHEST_DIRECTORY + f.getName());
-				//dwei netcoordinator.updateFileBcast(f.getName());
+				netcoordinator.updateFileBcast(f.getName());
 				// TODO GUI: Notify successful file update
 			} catch (FileNotFoundException e) {
 				// TODO GUI: File not found

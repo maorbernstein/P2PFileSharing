@@ -147,13 +147,28 @@ class GUINotification
         loadingStage.setTitle("Connecting to Network");
 
         // Show Popup
-        loadingStage.show();
-
+        if (isFxApplicationThread())
+        {
+            loadingStage.show();
+        }
+        else
+        {
+            runLater(() -> loadingStage.show());
+        }
     }
 
     public static void destroyLoadingPopup()
     {
-        loadingStage.close();
+        if (isFxApplicationThread())
+        {
+
+            loadingStage.close();
+        }
+        else
+        {
+            runLater(() -> loadingStage.close());
+        }
+
     }
 
 

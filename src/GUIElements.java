@@ -48,7 +48,7 @@ class GUIElements
     final static int POPUP_WINDOW_HEIGHT = 150;
     final static int POPUP_WINDOW_WIDTH = 300;
 
-    final static int GUI_TIMEOUT_SEC = 60;
+    final static int GUI_TIMEOUT_SEC = 600;
 
     GUIElements(Stage s, FileManagerGUI_IF f, UserManagerGUI_IF u)
     {
@@ -242,8 +242,16 @@ class GUIElements
     // Redraw the GUI
     void redraw()
     {
+        TabPane oldTP = new TabPane();
+
         // Get current TabPane
-        TabPane oldTP = (TabPane) SP.getContent();
+        try
+        {
+            oldTP = (TabPane) SP.getContent();
+        } catch (NullPointerException e)
+        {
+            SP = new ScrollPane();
+        }
 
         // Create TabPane
         TabPane tp = new TabPane();
@@ -270,7 +278,11 @@ class GUIElements
         tp.setTabClosingPolicy(TabPane.TabClosingPolicy.UNAVAILABLE);
 
         // Show the tab that was shown before
-        tp.getSelectionModel().select(oldTP.getSelectionModel().getSelectedIndex());
+        try
+        {
+            tp.getSelectionModel().select(oldTP.getSelectionModel().getSelectedIndex());
+        } catch(NullPointerException e)
+        {}
 
         if (isFxApplicationThread())
         {
@@ -278,7 +290,7 @@ class GUIElements
         }
         else
         {
-            runLater(() -> SP.setContent(tp));
+            runLater(() -> redraw());
         }
     }
 
