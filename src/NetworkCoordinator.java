@@ -12,12 +12,10 @@ import utilities.*;
 public class NetworkCoordinator extends Thread implements NetworkCoordinatorUserManager_IF, NetworkCoordinatorFileManager_IF {
 	private static final int HDR_LENGTH = 3;
 	private static final int P2P_PORT = 5002;
-	UserManagerCoordinator_IF usermanager;
-	FileManagerCoordinator_IF filemanager;
-	GUINetworkCoordinator_IF gui;
+	private UserManagerCoordinator_IF usermanager;
+	private FileManagerCoordinator_IF filemanager;
+	private GUINetworkCoordinator_IF gui;
 	private ServerSocket listening_socket;
-	static private boolean sendFileStarted = false;
-	private String getFilename;
 
 	private enum MESSAGE_TYPE {
 		// BCASTS
@@ -190,6 +188,12 @@ public class NetworkCoordinator extends Thread implements NetworkCoordinatorUser
 		sendBcastMsg(message_type, message.length, message);
 	}
 	
+	public void sendChatBcast(String chat_msg){
+		byte[] message = chat_msg.getBytes();
+		byte message_type = MESSAGE_TYPE.CHAT_MESSAGE.toByte();
+		sendBcastMsg(message_type, message.length, message);
+	}
+	
 	// FileManager Get File
 	public void getFile(String username, String filename){
 		FileRecvHandler recv_handler = new FileRecvHandler(username, filename);
@@ -329,6 +333,8 @@ public class NetworkCoordinator extends Thread implements NetworkCoordinatorUser
 			FileSendHandler send_handler = new FileSendHandler(port, filename, usermanager.getNetworkUserName(srcIP));
 			send_handler.setInterfaces(filemanager, usermanager, gui);
 			send_handler.start();
+		} else if (MESSAGE_TYPE.CHAT_MESSAGE.equals(message_type)){
+			// TODO: Call GUI with message and username
 		} else {
 			throw new IllegalArgumentException("Invalid Message Type");
 		}

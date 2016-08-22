@@ -5,7 +5,7 @@ import java.net.InetAddress;
 public interface NetworkCoordinatorUserManager_IF {
 	// Join Network
 	public void joinGroup(String username, InetAddress IP);
-
+	public void sendChatBcast(String message);
 	// These methods are unused
     /*
 	public void usernameTaken(String username, String IP);

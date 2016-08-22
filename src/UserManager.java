@@ -40,6 +40,10 @@ public class UserManager implements UserManagerGUI_IF, UserManagerCoordinator_IF
 		System.out.println(" }");
 	}
 	
+	public void chatMessage(String message){
+		net_coordinator.sendChatBcast(message);
+	}
+	
 	static public InetAddress getMyIP(){
 	    try {
 	        Enumeration<NetworkInterface> interfaces = NetworkInterface.getNetworkInterfaces();
