@@ -27,6 +27,11 @@ public class FileRecvHandler extends FileTransferHandler {
 		super(filename, username);
 		
 	}
+	
+	private void updatePercent(int num_chunks_complete, int total_chunks){
+		float percent = (float)num_chunks_complete / (float)total_chunks;
+		gui.uploadPercentComplete(otherUserName, filename, percent);
+	}
 
 	
 	@Override

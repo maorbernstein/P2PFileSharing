@@ -13,11 +13,6 @@ public abstract class FileTransferHandler extends Thread {
 		this.otherUserName = otherUserName;
 	}
 	
-	protected void updatePercent(int num_chunks_complete, int total_chunks){
-		float percent = (float)num_chunks_complete / (float)total_chunks;
-		gui.downloadPercentComplete(otherUserName, filename, percent);
-	}
-	
 	protected int parseChunkLenMsg(byte[] bytes){
 		assert(bytes.length != NUM_CHUNKS_MSG_LEN);
 		int num_chunks = 0;

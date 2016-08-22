@@ -11,6 +11,11 @@ public class FileSendHandler extends FileTransferHandler {
 		this.serverPort = serverPort;
 	}
 	
+	private void updatePercent(int num_chunks_complete, int total_chunks){
+		float percent = (float)num_chunks_complete / (float)total_chunks;
+		gui.downloadPercentComplete(otherUserName, filename, percent);
+	}
+	
 	@Override
 	public void run() {
 		// Call FileManager to get the size of the file
@@ -27,6 +32,7 @@ public class FileSendHandler extends FileTransferHandler {
 			OutputStream o = s.getOutputStream();
 			o.write(num_chunks_msg);
 			file_manager.readNetworkFileInit(otherUserName, filename);
+			gui.uploadStarted(otherUserName, filename);
 			while(numChunksSent != numChunks){
 				byte[] file_chunk_msg = new byte[FILE_CHUNK_SIZE]; 
 				int len = file_manager.readNetworkFileChunk(otherUserName, filename, file_chunk_msg);

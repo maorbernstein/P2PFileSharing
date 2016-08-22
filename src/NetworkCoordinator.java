@@ -11,7 +11,7 @@ import utilities.*;
 
 public class NetworkCoordinator extends Thread implements NetworkCoordinatorUserManager_IF, NetworkCoordinatorFileManager_IF {
 	private static final int HDR_LENGTH = 3;
-	private static final int P2P_PORT = 5001;
+	private static final int P2P_PORT = 5002;
 	UserManagerCoordinator_IF usermanager;
 	FileManagerCoordinator_IF filemanager;
 	GUINetworkCoordinator_IF gui;
