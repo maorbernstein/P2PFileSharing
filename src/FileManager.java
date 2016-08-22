@@ -107,6 +107,8 @@ public class FileManager implements FileManagerGUI_IF, FileManagerCoordinator_IF
 			// TODO: UserManager: Notify username already exists in file ledger (should never happen)
 		}
 		file_ledger.put(username, new ArrayList<String>());
+		File golden_chest_dir = new File(PUBLIC_DIRECTORY + username + "/");
+		golden_chest_dir.mkdirs();
 		showState();
 	}
 	
