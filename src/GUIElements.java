@@ -358,10 +358,11 @@ class GUIElements
 
         sendBtn.setOnAction((ActionEvent e) ->
         {
-            if(!input.getText().isEmpty())
+        	String user_input = input.getText();
+            if(!user_input.isEmpty())
             {
-                addMessage(new GUIMessages(myList.get(0).getUsername(), input.getText(), true));
-                //Todo: Send new message to NC
+                addMessage(new GUIMessages(myList.get(0).getUsername(), user_input, true));
+                um.chatMessage(user_input);
             }
             input.clear();
         });
