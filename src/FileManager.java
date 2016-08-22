@@ -168,8 +168,13 @@ public class FileManager implements FileManagerGUI_IF, FileManagerCoordinator_IF
 	}
 	
 	public void writeNetworkFileChunk(String username, String filename, byte[] bytes, int len){
+		FileOutputStream out = null;
 		Pair<String, String> p = new Pair<String, String>(username, filename);
-		FileOutputStream out = pending_recving_files.get(p);
+		for(Entry<Pair<String,String>, FileOutputStream> entry: pending_recving_files.entrySet()){
+			if(entry.getKey().equals(p)){
+				out = entry.getValue();
+			}
+		}
 		if(out == null){
 			// TODO: Network Coordinator: writeNetworkFileInit was not called properly
 		} else {
@@ -184,8 +189,13 @@ public class FileManager implements FileManagerGUI_IF, FileManagerCoordinator_IF
 	}
 	
 	public void writeNetworkFileDone(String username, String filename){
+		FileOutputStream out = null;
 		Pair<String, String> p = new Pair<>(username, filename);
-		FileOutputStream out = pending_recving_files.get(p);
+		for(Entry<Pair<String,String>, FileOutputStream> entry: pending_recving_files.entrySet()){
+			if(entry.getKey().equals(p)){
+				out = entry.getValue();
+			}
+		}
 		if(out == null){
 			// TODO Network Coordinator: writeNetworkFileInit was not called properly
 		} else {
@@ -331,8 +341,13 @@ public class FileManager implements FileManagerGUI_IF, FileManagerCoordinator_IF
 		
 	
 	public int readNetworkFileChunk(String username, String filename,byte[] bytes){
+		FileInputStream in = null;
 		Pair<String,String> p = new Pair<String, String>(username, filename);
-		FileInputStream in = pending_sending_files.get(p);
+		for(Entry<Pair<String,String>, FileInputStream> entry: pending_sending_files.entrySet()){
+			if(entry.getKey().equals(p)){
+				in = entry.getValue();
+			}
+		}
 		if(in == null){
 			//  readNetworkFileChunk was not called properly
 		} else {
@@ -348,7 +363,12 @@ public class FileManager implements FileManagerGUI_IF, FileManagerCoordinator_IF
 		
 	public void readNetworkFileDone(String username, String filename){
 		Pair<String, String> p = new Pair<String, String>(username, filename);
-		FileInputStream in = pending_sending_files.get(p);
+		FileInputStream in = null;
+		for(Entry<Pair<String,String>, FileInputStream> entry: pending_sending_files.entrySet()){
+			if(entry.getKey().equals(p)){
+				in = entry.getValue();
+			}
+		}
 		if(in == null){
 			// TODO:Network Coordinator: writeNetworkFileInit was not called properly
 		} else {

@@ -25,10 +25,10 @@ public abstract class FileTransferHandler extends Thread {
 	
 	protected byte[] fillChunkLenMsg(int numChunks){
 		byte[] bytes = new byte[NUM_CHUNKS_MSG_LEN];
-		bytes[0] = (byte)( (numChunks >> 0) & 0xff);
-		bytes[1] = (byte)( (numChunks >> 8) & 0xff);
-		bytes[2] = (byte)( (numChunks >> 16) & 0xff);
-		bytes[3] = (byte)( (numChunks >> 24) & 0xff);
+		bytes[0] = (byte)( (numChunks >> 24) & 0xff);
+		bytes[1] = (byte)( (numChunks >> 16) & 0xff);
+		bytes[2] = (byte)( (numChunks >> 8) & 0xff);
+		bytes[3] = (byte)( (numChunks >> 0) & 0xff);
 		return bytes;
 	}
 	

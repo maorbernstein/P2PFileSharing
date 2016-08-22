@@ -10,6 +10,12 @@ public class Pair<first_type, second_type> {
 		this.second = second;
 	}
 	
+	@Override
+	public boolean equals(Object o){
+		Pair<?,?> p = (Pair)o;
+		return (this.first.equals(p.first) && this.second.equals(p.second));
+	}
+	
 	public boolean equals(Pair<first_type, second_type> p){
 		return (this.first.equals(p.first) && this.second.equals(p.second));
 	}

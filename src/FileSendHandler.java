@@ -13,7 +13,7 @@ public class FileSendHandler extends FileTransferHandler {
 	
 	private void updatePercent(int num_chunks_complete, int total_chunks){
 		float percent = (float)num_chunks_complete / (float)total_chunks;
-		gui.downloadPercentComplete(otherUserName, filename, percent);
+		gui.uploadPercentComplete(otherUserName, filename, percent);
 	}
 	
 	@Override

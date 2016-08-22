@@ -238,7 +238,15 @@ public class NetworkCoordinator extends Thread implements NetworkCoordinatorUser
 			}
 		}
 		String username = new String(name_msg, StandardCharsets.UTF_8);
-		int port = (port_msg[0] << 8) | (port_msg[1]);
+		int first_byte = port_msg[0];
+		if(port_msg[0] < 0){
+			first_byte = port_msg[0] + 256;
+		}
+		int second_byte = port_msg[0];
+		if(port_msg[1] < 0){
+			second_byte = port_msg[1] + 256;
+		}
+		int port = (first_byte << 8) | (second_byte);
 		return new Pair<>(username, port);
 	}
 
