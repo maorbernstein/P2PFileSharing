@@ -6,40 +6,39 @@ import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Map.Entry;
-import java.util.Set;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
 
 import utilities.*;
 
 public class NetworkCoordinator extends Thread implements NetworkCoordinatorUserManager_IF, NetworkCoordinatorFileManager_IF {
-	private static final int FILE_CHUNK_SIZE = 1024;
 	private static final int HDR_LENGTH = 3;
 	private static final int P2P_PORT = 5001;
 	UserManagerCoordinator_IF usermanager;
 	FileManagerCoordinator_IF filemanager;
 	GUINetworkCoordinator_IF gui;
-//	private boolean stopThread = false;
 	private ServerSocket listening_socket;
-//	private Lock stopLock;
 	static private boolean sendFileStarted = false;
 	private String getFilename;
 
 	private enum MESSAGE_TYPE {
 		// BCASTS
-		ADD_USER_BCAST(0), REMOVE_USER_BCAST(1), ADD_FILE(2), UPDATE_FILE_BCAST(3), REMOVE_FILE_BCAST(4),
+		ADD_USER_BCAST(0), REMOVE_USER_BCAST(1), ADD_FILE(2), UPDATE_FILE_BCAST(3), REMOVE_FILE_BCAST(4), CHAT_MESSAGE(5),
 		// Join Network
-		JOIN_GROUP(5), USERNAME_TAKEN(6), ADD_USER_SINGLE(7),
+		JOIN_GROUP(6), USERNAME_TAKEN(7), ADD_USER_SINGLE(8),
 		// Get File
-		GET_FILE(9), SEND_FILE(10);
+		GET_FILE(9);
+		
 
 		private final byte _type;
 
 		MESSAGE_TYPE(int b){
 			this._type = (byte)b;
 		}
+		
+		public boolean equals(byte b){
+			return this._type == b;
+		}
 
-		byte toByte() {
+		public byte toByte() {
 			return _type;
 		}
 	};
@@ -104,6 +103,19 @@ public class NetworkCoordinator extends Thread implements NetworkCoordinatorUser
 		return message;
 	}
 	
+	private static byte[] createGetFileMsg(Pair<String, Integer> username_port_pair){
+		String username = username_port_pair.first;
+		int port = username_port_pair.second;
+		byte[] message = new byte[username.length() + 2];
+		int i = 0;
+		message[i++] = (byte) ( (port >> 8) & 0xff );
+		message[i++] = (byte) ( (port >> 0) & 0xff );
+		for(byte b: username.getBytes()) {
+			message[i++] = b;
+		}
+		return message;
+	}
+	
 	// UserManager BCASTS
 	public void addUserBcast(Pair<String, InetAddress> username_ip_pair) {
 		byte[] message = createAddUserMsg(username_ip_pair);
@@ -123,11 +135,11 @@ public class NetworkCoordinator extends Thread implements NetworkCoordinatorUser
 		sendMsg(message_type, 0, null, IP);
 	}
 	
-	public void addUserSingle(Pair<String, InetAddress> username_ip_pair, String username) {
-		byte[] message = createAddUserMsg(username_ip_pair);
-		byte message_type = MESSAGE_TYPE.ADD_USER_SINGLE.toByte();
-		sendMsg(message_type, message.length, message, usermanager.getNetworkUserIP(username));
-	}
+//	public void addUserSingle(Pair<String, InetAddress> username_ip_pair, String username) {
+//		byte[] message = createAddUserMsg(username_ip_pair);
+//		byte message_type = MESSAGE_TYPE.ADD_USER_SINGLE.toByte();
+//		sendMsg(message_type, message.length, message, usermanager.getNetworkUserIP(username));
+//	}
 	
 	public void addUserSingle(Pair<String, InetAddress> username_ip_pair, InetAddress address) {
 		byte[] message = createAddUserMsg(username_ip_pair);
@@ -135,11 +147,11 @@ public class NetworkCoordinator extends Thread implements NetworkCoordinatorUser
 		sendMsg(message_type, message.length, message, address);
 	}
 	
-	public void addFileSingle(String filename, String username) {
-		byte[] message = filename.getBytes();
-		byte message_type = MESSAGE_TYPE.ADD_FILE.toByte();
-		sendMsg(message_type, message.length, message, usermanager.getNetworkUserIP(username));
-	}
+//	public void addFileSingle(String filename, String username) {
+//		byte[] message = filename.getBytes();
+//		byte message_type = MESSAGE_TYPE.ADD_FILE.toByte();
+//		sendMsg(message_type, message.length, message, usermanager.getNetworkUserIP(username));
+//	}
 	
 	public void addFileSingle(String filename, InetAddress address) {
 		byte[] message = filename.getBytes();
@@ -180,21 +192,13 @@ public class NetworkCoordinator extends Thread implements NetworkCoordinatorUser
 	
 	// FileManager Get File
 	public void getFile(String username, String filename){
-		byte[] message = filename.getBytes();
+		FileRecvHandler recv_handler = new FileRecvHandler(username, filename);
+		recv_handler.setInterfaces(filemanager, usermanager, gui);
+		int port = recv_handler.bindToPort();
+		recv_handler.start();
+		byte[] message = createGetFileMsg(new Pair<>(filename, port));
 		byte message_type = MESSAGE_TYPE.GET_FILE.toByte();
 		sendMsg(message_type, message.length, message, usermanager.getNetworkUserIP(username));
-	}
-	
-	private void sendFile(String username, String filename) {
-		byte[] message = new byte[FILE_CHUNK_SIZE];
-		byte message_type = MESSAGE_TYPE.SEND_FILE.toByte();
-		filemanager.readNetworkFileInit(username, filename);
-		int count;
-		count = filemanager.readNetworkFileChunk(username, filename, message);
-		while (count > 0) {
-			sendMsg(message_type, count, message, usermanager.getNetworkUserIP(username));
-		}
-		filemanager.readNetworkFileDone(username, filename);
 	}
 	
 	// Receive Messages
@@ -220,22 +224,25 @@ public class NetworkCoordinator extends Thread implements NetworkCoordinatorUser
 			}
 		}
 	}
-
-	private static String convertIPAddress(byte[] bytes){
-		int i = 4;
-		String ipAddress = "";
-		for(byte b: bytes){
-			ipAddress += (b & 0xff);
-			if(--i > 0){
-				ipAddress += ".";
+	
+	static private Pair<String,Integer> parseGetFileMsg(byte[] message){
+		byte[] port_msg = new byte[2];
+		byte[] name_msg = new byte[message.length - 2];
+		int j = 0;
+		int k = 0;
+		for(int i = 0; i < message.length; i++){
+			if(i < 2){
+				port_msg[j++] = message[i];
 			} else {
-				return ipAddress;
+				name_msg[k++] = message[i];
 			}
 		}
-		return ipAddress;
+		String username = new String(name_msg, StandardCharsets.UTF_8);
+		int port = (port_msg[0] << 8) | (port_msg[1]);
+		return new Pair<>(username, port);
 	}
 
-	private Pair<String,InetAddress> parseAddUserMsg(byte[] message){
+	static private Pair<String,InetAddress> parseAddUserMsg(byte[] message){
 		byte[] ip_msg = new byte[4];
 		byte[] name_msg = new byte[message.length - 4];
 		int j = 0;
@@ -259,7 +266,7 @@ public class NetworkCoordinator extends Thread implements NetworkCoordinatorUser
 	
 	private void recvMsg(byte message_type, byte[] message, InetAddress srcIP) {
 		String msg_string = new String(message, StandardCharsets.UTF_8);
-		if(  (message_type == MESSAGE_TYPE.ADD_USER_BCAST.toByte() ) || (message_type == MESSAGE_TYPE.ADD_USER_SINGLE.toByte()) ) {
+		if(  ( MESSAGE_TYPE.ADD_USER_BCAST.equals(message_type) ) || (MESSAGE_TYPE.ADD_USER_SINGLE.equals(message_type) ) ) {
 			Pair<String, InetAddress> username_ip_pair = parseAddUserMsg(message);
 			String new_username = username_ip_pair.first;
 			InetAddress new_ip = username_ip_pair.second;
@@ -271,19 +278,18 @@ public class NetworkCoordinator extends Thread implements NetworkCoordinatorUser
 				Iterator<String> ownFilePtr = filemanager.getOwnFiles();
 				while(ownFilePtr.hasNext()) {
 					String filename = (String)ownFilePtr.next();
-					addFileSingle(filename, username_ip_pair.first);
+					addFileSingle(filename, username_ip_pair.second);
 				}
 			}
-		} else if (message_type == MESSAGE_TYPE.REMOVE_USER_BCAST.toByte()) {
+		} else if (MESSAGE_TYPE.REMOVE_USER_BCAST.equals(message_type)) {
 			usermanager.removeNetworkUser(msg_string, srcIP);
-		} else if (message_type == MESSAGE_TYPE.ADD_FILE.toByte()) {
+		} else if (MESSAGE_TYPE.ADD_FILE.equals(message_type)) {
 			filemanager.addNetworkFile(msg_string, usermanager.getNetworkUserName(srcIP));
-		} else if (message_type == MESSAGE_TYPE.UPDATE_FILE_BCAST.toByte()) {
+		} else if (MESSAGE_TYPE.UPDATE_FILE_BCAST.equals(message_type)) {
 			filemanager.updateNetworkFile(msg_string, usermanager.getNetworkUserName(srcIP));
-		} else if (message_type == MESSAGE_TYPE.REMOVE_FILE_BCAST.toByte()) {
+		} else if (MESSAGE_TYPE.REMOVE_FILE_BCAST.equals(message_type)) {
 			filemanager.removeNetworkFile(msg_string, usermanager.getNetworkUserName(srcIP));
-		} else if (message_type == MESSAGE_TYPE.JOIN_GROUP.toByte()) {
-			// Check if username is taken
+		} else if (MESSAGE_TYPE.JOIN_GROUP.equals(message_type)) {
 			String username = msg_string;
 			if(usermanager.isUsernameTaken(username)){
 				usernameTaken(srcIP);
@@ -306,22 +312,15 @@ public class NetworkCoordinator extends Thread implements NetworkCoordinatorUser
 				// Step 5) 2(1)
 				usermanager.addNetworkUser(username, srcIP);
 			}
-		} else if (message_type == MESSAGE_TYPE.USERNAME_TAKEN.toByte()) {
+		} else if (MESSAGE_TYPE.USERNAME_TAKEN.equals(message_type)) {
 			gui.connectionStatus(true, false);
-		} else if (message_type == MESSAGE_TYPE.GET_FILE.toByte()) {
-			sendFile(msg_string, usermanager.getNetworkUserName(srcIP) );
-		} else if (message_type == MESSAGE_TYPE.SEND_FILE.toByte()) {
-			if (!sendFileStarted) {
-				filemanager.writeNetworkFileInit(usermanager.getNetworkUserName(srcIP), getFilename);
-				sendFileStarted = true;
-			}
-			else if(sendFileStarted && message.length > 0) {
-				filemanager.writeNetworkFileChunk(usermanager.getNetworkUserName(srcIP), getFilename, message);
-			}
-			else {
-				filemanager.writeNetworkFileDone(usermanager.getNetworkUserName(srcIP), getFilename);
-				sendFileStarted = false;
-			}
+		} else if (MESSAGE_TYPE.GET_FILE.equals(message_type)) {
+			Pair<String, Integer> file_port_pair = parseGetFileMsg(message);
+			String filename = file_port_pair.first;
+			int port = file_port_pair.second;
+			FileSendHandler send_handler = new FileSendHandler(port, filename, usermanager.getNetworkUserName(srcIP));
+			send_handler.setInterfaces(filemanager, usermanager, gui);
+			send_handler.start();
 		} else {
 			throw new IllegalArgumentException("Invalid Message Type");
 		}

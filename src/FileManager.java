@@ -134,6 +134,17 @@ public class FileManager implements FileManagerGUI_IF, FileManagerCoordinator_IF
 		showState();
 	}
 	
+	@Override
+	public long getFileSize(String filename) {
+		if(!golden_chest.contains(filename)){
+			// TODO: NetworkCoordinator: Notify file name requested not found
+		} else {
+			File f = new File(GOLDEN_CHEST_DIRECTORY + filename);
+			return f.length();
+		}
+		return 0;
+	}	
+	
 	public void writeNetworkFileInit(String username, String filename) {
 		ArrayList<String> filenames = file_ledger.get(username);
 		if(filenames == null){
@@ -156,14 +167,14 @@ public class FileManager implements FileManagerGUI_IF, FileManagerCoordinator_IF
 		showState();
 	}
 	
-	public void writeNetworkFileChunk(String username, String filename, byte[] bytes){
+	public void writeNetworkFileChunk(String username, String filename, byte[] bytes, int len){
 		Pair<String, String> p = new Pair<String, String>(username, filename);
 		FileOutputStream out = pending_recving_files.get(p);
 		if(out == null){
 			// TODO: Network Coordinator: writeNetworkFileInit was not called properly
 		} else {
 			try {
-				out.write(bytes);
+				out.write(bytes, 0, len);
 				out.flush();
 			} catch(IOException e){
 				// TODO: Network Coordinator: IO Exception occurred.
@@ -255,6 +266,7 @@ public class FileManager implements FileManagerGUI_IF, FileManagerCoordinator_IF
 			}
 			return;
 		}
+		addUserFile(f);
 		// TODO GUI: File not found in golden chest, call add file
 	}
 	
@@ -347,6 +359,6 @@ public class FileManager implements FileManagerGUI_IF, FileManagerCoordinator_IF
 				// TODO:Network Coordinator: IO Exception occurred.
 			}
 		}
-	}			
+	}		
 }
 		
